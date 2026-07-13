@@ -162,7 +162,16 @@ const CART_KEY = "futrek_cart";
         });
 
         embeddedCheckout.mount("#embedded-checkout");
+
+        const layout = document.querySelector(".layout");
+        if (layout) layout.classList.add("payment-active");
+
         button.style.display = "none";
+
+        document.getElementById("embedded-checkout").scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
       } catch (error) {
         console.error(error);
         showPaymentError(error.message || "Nie udało się załadować płatności.");

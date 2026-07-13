@@ -1,0 +1,6 @@
+Poprawka:
+- formularz Stripe otrzymał stałą minimalną wysokość,
+- usunięto przycinanie iframe,
+- po kliknięciu kasa przechodzi w szeroki układ,
+- lista produktów jest ukrywana podczas płatności,
+- strona przewija się do formularza.
