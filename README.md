@@ -82,3 +82,18 @@ Nigdy nie wpisuj `sk_live_...` ani `whsec_...` do plików HTML lub JavaScript.
 - Zamiast uruchamiać płatność pojawia się instrukcja otwarcia strony w Safari/Chrome.
 - Link do kasy zawiera zakodowany koszyk w parametrze `cart`.
 - Po otwarciu tego linku w zewnętrznej przeglądarce koszyk odtwarza się automatycznie.
+
+
+## Grafiki używane przez stronę
+
+W folderze `assets/images/` znajdują się:
+
+- `logo.jpeg`
+- `laptop.jpeg`
+- `analiza.png`
+- `pakiet.png`
+- `obrona.png`
+- `atak.png`
+- `mentality.png`
+
+Wszystkie ścieżki w HTML wskazują na `/assets/images/...`.

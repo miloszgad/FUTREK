@@ -51,3 +51,15 @@
 .browser-modal__card ol{margin:18px 0;padding-left:22px;color:#d8f6df;line-height:1.65}
 .browser-modal__copy{width:100%;border:0;border-radius:15px;padding:15px 18px;background:linear-gradient(135deg,var(--gold),#b8ffd4);color:#031007;font-weight:950;cursor:pointer}
 .browser-modal__status{min-height:22px;margin:10px 0 0!important;text-align:center;color:var(--gold2)!important;font-size:13px}
+
+
+.priorityImg{
+  width:100%;
+  aspect-ratio:16/10;
+  object-fit:cover;
+  display:block;
+  margin:0 0 18px;
+  border-radius:18px;
+  border:1px solid rgba(124,255,176,.18);
+  background:#07100a;
+}
