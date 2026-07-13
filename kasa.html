@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kasa — FUTrek</title>
+  <meta name="description" content="Koszyk i kasa FUTrek." />
+  <link rel="stylesheet" href="/assets/css/kasa.css">
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="/">
+        <img src="/assets/images/logo.jpeg" alt="Logo FUTrek">
+        <span>FUTrek</span>
+      </a>
+      <a class="back" href="/">← Wróć do ofert</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <div class="headline">
+        <span class="eyebrow">🛒 Twoje zamówienie</span>
+        <h1>Twoje zamówienie</h1>
+        <p>Sprawdź swoje zamówienie, zmień liczbę produktów i przejdź dalej.</p>
+      </div>
+
+      <div class="layout">
+        <section class="panel">
+          <h2>Produkty w koszyku</h2>
+<div id="cart-list" class="cart-list"></div>
+        </section>
+
+        <aside class="panel">
+          <h2>Podsumowanie</h2>
+          <div class="summary-row">
+            <span>Liczba produktów</span>
+            <strong id="summary-count">0</strong>
+          </div>
+          <div class="summary-row total">
+            <span>Razem</span>
+            <strong id="summary-total">0,00 zł</strong>
+          </div>
+
+          <button id="checkout-button" class="checkout-btn" disabled>Przejdź do płatności</button>
+          <div id="payment-error" class="payment-error" role="alert"></div>
+          <div id="embedded-checkout" class="embedded-checkout"></div>
+          <a href="/#oferty" class="continue-btn">Dodaj kolejne produkty</a>
+</aside>
+      </div>
+    </div>
+  </main>
+
+  
+  <script src="/assets/js/kasa.js"></script>
+</body>
+</html>

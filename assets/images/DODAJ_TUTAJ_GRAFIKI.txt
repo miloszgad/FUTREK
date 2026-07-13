@@ -1,0 +1,6 @@
+Dodaj tutaj:
+logo.jpeg
+laptop.jpeg
+obrona.png
+atak.png
+mentality.png
