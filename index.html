@@ -45,5 +45,23 @@
   
 
   <script src="/assets/js/index.js"></script>
+
+  <div class="browser-modal" id="browser-modal" aria-hidden="true">
+    <div class="browser-modal__backdrop" id="browser-modal-backdrop"></div>
+    <section class="browser-modal__card" role="dialog" aria-modal="true" aria-labelledby="browser-modal-title">
+      <button class="browser-modal__close" id="browser-modal-close" type="button" aria-label="Zamknij">×</button>
+      <div class="browser-modal__icon">↗</div>
+      <h2 id="browser-modal-title">Dokończ zakup w Safari lub Chrome</h2>
+      <p>TikTok blokuje bezpieczne płatności w swojej przeglądarce.</p>
+      <ol>
+        <li>Kliknij <strong>•••</strong> w prawym górnym rogu TikToka.</li>
+        <li>Wybierz <strong>Otwórz w przeglądarce</strong>.</li>
+        <li>Jeśli tej opcji nie ma, skopiuj link poniżej i wklej go do Safari.</li>
+      </ol>
+      <button class="browser-modal__copy" id="copy-checkout-link" type="button">Skopiuj link do kasy</button>
+      <p class="browser-modal__status" id="copy-status" aria-live="polite"></p>
+    </section>
+  </div>
+
 </body>
 </html>

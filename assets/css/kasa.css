@@ -260,3 +260,14 @@
         min-height:780px;
       }
     }
+
+
+.tiktok-blocker{position:fixed;inset:0;z-index:300;background:#050806;display:grid;place-items:center;padding:22px}
+.tiktok-blocker[hidden]{display:none}
+.tiktok-blocker__card{width:min(560px,100%);background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.035));border:1px solid rgba(124,255,176,.24);border-radius:28px;padding:30px;box-shadow:0 28px 80px rgba(0,0,0,.62)}
+.tiktok-blocker__icon{width:68px;height:68px;border-radius:50%;display:grid;place-items:center;background:rgba(0,255,122,.12);border:1px solid rgba(0,255,122,.35);font-size:32px;margin-bottom:18px}
+.tiktok-blocker h1{font-size:clamp(30px,6vw,48px);line-height:1;margin:0 0 14px}
+.tiktok-blocker p{color:var(--muted);line-height:1.5}
+.tiktok-blocker ol{padding-left:22px;line-height:1.7;color:#d8f6df}
+.tiktok-blocker button{width:100%;border:0;border-radius:16px;padding:16px 18px;background:linear-gradient(135deg,var(--green),#b8ffd4);color:#031007;font-weight:950;cursor:pointer}
+.tiktok-blocker__status{min-height:22px;margin:10px 0 0!important;text-align:center;color:var(--green2)!important;font-size:13px}

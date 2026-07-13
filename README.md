@@ -74,3 +74,11 @@ Potem wykonaj ponowny deploy.
 ## Bezpieczeństwo
 
 Nigdy nie wpisuj `sk_live_...` ani `whsec_...` do plików HTML lub JavaScript.
+
+
+## Obsługa przeglądarki TikToka
+
+- TikTok jest wykrywany po `userAgent`.
+- Zamiast uruchamiać płatność pojawia się instrukcja otwarcia strony w Safari/Chrome.
+- Link do kasy zawiera zakodowany koszyk w parametrze `cart`.
+- Po otwarciu tego linku w zewnętrznej przeglądarce koszyk odtwarza się automatycznie.

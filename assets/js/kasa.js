@@ -1,3 +1,76 @@
+
+function isTikTokBrowser() {
+  const ua = navigator.userAgent || "";
+  return /TikTok|musical_ly|BytedanceWebview|ByteLocale/i.test(ua);
+}
+
+function restoreCartFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const encoded = params.get("cart");
+  if (!encoded) return;
+
+  try {
+    const json = decodeURIComponent(escape(atob(decodeURIComponent(encoded))));
+    const parsed = JSON.parse(json);
+
+    if (!Array.isArray(parsed)) return;
+
+    const allowedIds = new Set([
+      "build-your-team",
+      "full-game-control",
+      "area-control",
+      "goal-machine",
+      "wild-mentality"
+    ]);
+
+    const cleanCart = parsed
+      .filter(item => allowedIds.has(item.id))
+      .map(item => ({
+        id: item.id,
+        name: String(item.name || ""),
+        price: Number(item.price),
+        quantity: Math.max(1, Math.min(10, Number(item.quantity) || 1))
+      }));
+
+    if (cleanCart.length) {
+      localStorage.setItem("futrek_cart", JSON.stringify(cleanCart));
+    }
+  } catch (error) {
+    console.error("Nie udało się odtworzyć koszyka z linku:", error);
+  }
+}
+
+restoreCartFromUrl();
+
+const tiktokBlocker = document.getElementById("tiktok-blocker");
+const copyCurrentCheckout = document.getElementById("copy-current-checkout");
+const copyCurrentStatus = document.getElementById("copy-current-status");
+
+if (isTikTokBrowser()) {
+  tiktokBlocker.hidden = false;
+  document.body.style.overflow = "hidden";
+}
+
+copyCurrentCheckout.addEventListener("click", async () => {
+  const url = window.location.href;
+
+  try {
+    await navigator.clipboard.writeText(url);
+    copyCurrentStatus.textContent = "Link skopiowany. Wklej go do Safari lub Chrome.";
+  } catch {
+    const textarea = document.createElement("textarea");
+    textarea.value = url;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    textarea.remove();
+    copyCurrentStatus.textContent = "Link skopiowany. Wklej go do Safari lub Chrome.";
+  }
+});
+
+
 const CART_KEY = "futrek_cart";
 
     function getCart() {

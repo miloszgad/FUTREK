@@ -9,6 +9,22 @@
   <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
+
+  <div class="tiktok-blocker" id="tiktok-blocker" hidden>
+    <section class="tiktok-blocker__card">
+      <div class="tiktok-blocker__icon">↗</div>
+      <h1>Otwórz kasę w Safari lub Chrome</h1>
+      <p>TikTok nie obsługuje bezpiecznej płatności na tej stronie.</p>
+      <ol>
+        <li>Kliknij <strong>•••</strong> u góry ekranu.</li>
+        <li>Wybierz <strong>Otwórz w przeglądarce</strong>.</li>
+        <li>Jeśli tej opcji nie widzisz, skopiuj link i wklej go do Safari.</li>
+      </ol>
+      <button id="copy-current-checkout" type="button">Skopiuj link do kasy</button>
+      <p id="copy-current-status" class="tiktok-blocker__status"></p>
+    </section>
+  </div>
+
   <header>
     <div class="wrap nav">
       <a class="brand" href="/">
