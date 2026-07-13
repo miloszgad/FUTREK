@@ -133,7 +133,15 @@ const CART_KEY = "futrek_cart";
 
 function isTikTokBrowser() {
   const ua = navigator.userAgent || "";
-  return /TikTok|musical_ly|BytedanceWebview|ByteLocale/i.test(ua);
+  const referrer = document.referrer || "";
+
+  const tiktokUserAgent =
+    /TikTok|musical_ly|BytedanceWebview|ByteLocale|Aweme|TTWebView|zhiliaoapp|trill/i.test(ua);
+
+  const openedFromTikTok =
+    /(^|\.)tiktok\.com/i.test(new URL(referrer || window.location.href).hostname);
+
+  return tiktokUserAgent || openedFromTikTok;
 }
 
 function encodeCartForUrl(cart) {
@@ -173,7 +181,7 @@ function closeBrowserModal() {
   document.body.style.overflow = "";
 }
 
-checkoutLink.addEventListener("click", (event) => {
+if (checkoutLink) checkoutLink.addEventListener("click", (event) => {
   const cart = getCart();
   if (!cart.length) {
     event.preventDefault();
@@ -191,10 +199,10 @@ checkoutLink.addEventListener("click", (event) => {
   }
 });
 
-browserModalClose.addEventListener("click", closeBrowserModal);
-browserModalBackdrop.addEventListener("click", closeBrowserModal);
+if (browserModalClose) browserModalClose.addEventListener("click", closeBrowserModal);
+if (browserModalBackdrop) browserModalBackdrop.addEventListener("click", closeBrowserModal);
 
-copyCheckoutLink.addEventListener("click", async () => {
+if (copyCheckoutLink) copyCheckoutLink.addEventListener("click", async () => {
   const url = buildCheckoutUrl();
 
   try {
