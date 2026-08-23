@@ -3,67 +3,174 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FUTrek — Analizy i kursy EA FC 26</title>
-  <meta name="description" content="Analiza składu, kursy obrony, ofensywy i mentalu w EA FC 26 od FUTrek." />
-  <link rel="stylesheet" href="/assets/css/index.css">
-  <link rel="manifest" href="/site.webmanifest">
-  <link rel="icon" href="/assets/images/logo.jpeg">
+  <title>FUTrek — Analizy i kursy EA FC 27</title>
+  <meta name="description" content="Analiza składu, kursy obrony, ofensywy i mentalu w EA FC 27 od FUTrek." />
+  
+  
+  
+  <style>
+    :root{
+      --bg:#050806; --card:#0d1410; --card2:#111d16; --text:#f4fff8; --muted:#a9b9ad; --gold:#00ff7a; --gold2:#7cffb0; --red:#00c853; --line:rgba(124,255,176,.16); --shadow:0 28px 80px rgba(0,0,0,.62);
+    }
+    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(circle at 20% 0%,rgba(0,255,122,.22),transparent 34%),radial-gradient(circle at 80% 10%,rgba(124,255,176,.16),transparent 30%),var(--bg);color:var(--text)}
+    a{text-decoration:none;color:inherit} .wrap{width:min(1120px,92%);margin:0 auto}.pill{display:inline-flex;gap:8px;align-items:center;border:1px solid rgba(0,255,122,.35);background:rgba(0,255,122,.09);color:var(--gold2);padding:9px 14px;border-radius:999px;font-weight:800;font-size:13px;letter-spacing:.2px;margin-bottom: 15px;}
+    header{position:sticky;top:0;z-index:20;background:rgba(5,8,6,.78);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 0}.brand{display:flex;align-items:center;gap:10px;font-weight:950;letter-spacing:.4px}.brand img{width:46px;height:46px;border-radius:50%}.navlinks{display:flex;gap:18px;color:var(--muted);font-size:14px}.navlinks a:hover{color:white}.navcta{background:linear-gradient(135deg,var(--gold),#b8ffd4);color:#031007;padding:11px 16px;border-radius:14px;font-weight:950;box-shadow:0 8px 22px rgba(0,255,122,.18)}
+    .hero{padding:58px 0 34px}.heroGrid{display:grid;grid-template-columns:1.1fr .9fr;gap:36px;align-items:center}.eyebrow{margin-bottom:16px}.h1{font-size:clamp(38px,6vw,72px);line-height:.94;margin:0 0 18px;font-weight:1000;letter-spacing:-2.4px}.h1 span{background:linear-gradient(135deg,var(--gold2),#f4fff8,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}.lead{font-size:19px;line-height:1.55;color:#d8f6df;max-width:660px;margin:0 0 24px}.ctaRow{display:flex;gap:12px;flex-wrap:wrap;margin:28px 0}.btn{display:inline-flex;justify-content:center;align-items:center;gap:10px;border:0;border-radius:16px;padding:15px 20px;font-weight:950;cursor:pointer;transition:.18s transform,.18s box-shadow}.btn:hover{transform:translateY(-2px)}.primary{background:linear-gradient(135deg,var(--gold),#b8ffd4);color:#031007;box-shadow:0 16px 38px rgba(0,255,122,.24)}.secondary{background:rgba(255,255,255,.08);border:1px solid var(--line);color:white}.trust{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:26px}.metric{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.035));border:1px solid var(--line);border-radius:18px;padding:16px}.metric b{display:block;font-size:26px;color:white}.metric span{font-size:12px;color:var(--muted);font-weight:700}.logoStage{position:relative;min-height:520px;display:grid;place-items:center}.glow{position:absolute;inset:7%;border-radius:50%;background:radial-gradient(circle,rgba(0,255,122,.22),transparent 62%);filter:blur(18px)}.heroLogo{position:relative;width:min(480px,95%);filter:drop-shadow(0 26px 60px rgba(0,0,0,.72))}.badgeFloat{position:absolute;right:4%;bottom:12%;background:rgba(8,18,12,.94);border:1px solid rgba(0,255,122,.42);border-radius:22px;padding:16px 18px;box-shadow:var(--shadow);max-width:230px}.badgeFloat b{color:var(--gold2)}
+    section{padding:44px 0}.sectionHead{display:flex;justify-content:space-between;align-items:end;gap:18px;margin-bottom:20px}.sectionHead h2{font-size:clamp(28px,4vw,44px);line-height:1;margin:0;letter-spacing:-1.2px}.sectionHead p{color:var(--muted);max-width:520px;margin:0;line-height:1.45}.priority{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:22px}.product{position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.085),rgba(255,255,255,.035));border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow)}.product.hot{border-color:rgba(0,255,122,.50)}.product .topLabel{top:16px;left:16px;background:linear-gradient(135deg,#00c853,#00ff7a);color:white;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:950}.productBody{padding:22px}.productImg{width:100%;aspect-ratio:16/10;object-fit:cover;background:#222;border-radius:22px;border:1px solid rgba(255,255,255,.1)}.product h3{font-size:25px;margin:18px 0 8px;line-height:1.12}.product p{color:#d4f2dc;line-height:1.46;margin:0 0 14px}.price{display:flex;align-items:baseline;gap:10px;margin:14px 0 18px}.price strong{font-size:30px;color:white}.price s{color:#748579;font-weight:800}.mini{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}.mini span{font-size:12px;color:#aaffc9;background:rgba(0,255,122,.11);border:1px solid rgba(0,255,122,.22);border-radius:999px;padding:7px 9px;font-weight:800}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.small .productImg{aspect-ratio:1.1/1}.small h3{font-size:21px}.small .price strong{font-size:25px}.payment{width:100%;font-size:15px}
+
+        .proofStrip{padding:32px 0 10px}.proofBox{display:grid;grid-template-columns:.78fr 1.22fr;gap:24px;align-items:center;background:radial-gradient(circle at 10% 0%,rgba(0,200,83,.18),transparent 38%),radial-gradient(circle at 92% 12%,rgba(0,255,122,.18),transparent 34%),linear-gradient(135deg,rgba(17,17,20,.96),rgba(7,7,7,.92));border:1px solid rgba(0,255,122,.28);border-radius:32px;padding:26px;box-shadow:var(--shadow);overflow:hidden}.proofCopy h2{font-size:clamp(28px,4vw,46px);line-height:1;margin:10px 0 12px;letter-spacing:-1.2px}.proofCopy p{color:#d7d0c5;line-height:1.55;margin:0 0 18px}.proofStats{display:flex;gap:10px;flex-wrap:wrap}.proofStats span{border:1px solid rgba(0,255,122,.28);background:rgba(0,255,122,.09);color:#aaffc9;border-radius:999px;padding:9px 12px;font-weight:900;font-size:12px}.reviewStack{display:grid;grid-template-columns:1fr 1fr;gap:14px;transform:rotate(-.6deg)}.reviewCard{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.085),rgba(255,255,255,.035));color:var(--text);border-radius:22px;padding:18px;min-height:190px;box-shadow:0 18px 42px rgba(0,0,0,.45);border:1px solid rgba(0,255,122,.24);overflow:hidden}.reviewCard:before{content:"";position:absolute;inset:auto -30% -55% -30%;height:130px;background:radial-gradient(circle,rgba(242,201,76,.14),transparent 62%);pointer-events:none}.reviewCard:nth-child(even){transform:translateY(18px) rotate(1.4deg)}.reviewCard:nth-child(3){transform:translateY(-4px) rotate(.5deg)}.reviewAvatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,rgba(0,255,122,.24),rgba(0,200,83,.18));border:1px solid rgba(242,201,76,.34);display:grid;place-items:center;color:#d8ffe7;font-weight:1000;margin-bottom:8px}.reviewCard h3{margin:0;font-size:21px;color:white}.reviewStars{color:#7cffb0;letter-spacing:2px;font-size:20px;margin:8px 0;text-shadow:0 0 20px rgba(0,255,122,.35)}.reviewCard p{font-size:14px;line-height:1.42;color:#d8f6df;font-style:italic;margin:0}.reviewPhoto{margin-top:16px;border-radius:22px;border:1px solid rgba(0,255,122,.24);background:linear-gradient(135deg,rgba(242,201,76,.12),rgba(0,200,83,.10));padding:16px;color:#aaffc9;font-weight:900;line-height:1.4}.reviewPhoto:before{content:"600+ zadowolonych graczy";display:block;font-size:26px;color:white;margin-bottom:5px}.reviewPhoto img{display:none}.reviewRibbon{position:absolute;top:12px;right:-34px;transform:rotate(35deg);background:linear-gradient(135deg,var(--gold),#b8ffd4);color:#031007;font-size:11px;font-weight:1000;padding:7px 42px}.socialProofNote{margin-top:16px;color:#8fa494;font-size:12px;line-height:1.45}
+
+    .how{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.step{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:24px;padding:22px}.step b{color:var(--gold2);font-size:28px}.step h3{margin:12px 0 8px}.step p{margin:0;color:var(--muted);line-height:1.5}.final{margin:42px 0 54px;background:linear-gradient(135deg,rgba(0,200,83,.20),rgba(0,255,122,.14));border:1px solid rgba(0,255,122,.34);border-radius:32px;padding:30px;display:flex;justify-content:space-between;align-items:center;gap:20px}.final h2{margin:0 0 8px;font-size:32px}.final p{margin:0;color:#d8f6df} footer{border-top:1px solid var(--line);padding:24px 0;color:var(--muted);font-size:13px}.note{color:#8fa494;font-size:12px;line-height:1.45;margin-top:12px}
+
+    .cart-link{display:inline-flex;align-items:center;gap:8px}
+    .cart-count{min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#031007;color:var(--gold);display:inline-grid;place-items:center;font-size:12px;font-weight:1000}
+    .cart-toast{position:fixed;right:20px;bottom:20px;z-index:100;background:#0d1410;border:1px solid rgba(0,255,122,.45);color:white;padding:14px 18px;border-radius:14px;box-shadow:var(--shadow);opacity:0;transform:translateY(12px);pointer-events:none;transition:.2s}
+    .cart-toast.show{opacity:1;transform:translateY(0)}
+    button.btn{font:inherit}
+
+    .release-bar{position:sticky;top:70px;z-index:19;background:linear-gradient(135deg,rgba(0,200,83,.97),rgba(0,255,122,.97));color:#031007;border-bottom:1px solid rgba(184,255,212,.65);box-shadow:0 12px 30px rgba(0,0,0,.32)}
+    .release-inner{width:min(1120px,92%);margin:0 auto;display:flex;align-items:center;justify-content:center;gap:24px;padding:14px 0;text-align:center;flex-wrap:wrap}.release-copy{font-weight:1000;font-size:clamp(16px,2vw,22px)}.release-copy small{display:block;font-size:11px;letter-spacing:.8px;text-transform:uppercase;opacity:.72}.release-countdown{font-variant-numeric:tabular-nums;font-weight:1000;font-size:clamp(24px,4vw,42px);letter-spacing:1px;line-height:1}.release-countdown span{display:inline-block;min-width:2ch}.product-lock{margin:14px 0 18px;padding:14px;border:1px solid rgba(0,255,122,.28);background:rgba(0,255,122,.08);border-radius:16px;text-align:center}.product-lock strong{display:block;color:var(--gold2);font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px}.product-countdown{font-weight:1000;font-size:22px;font-variant-numeric:tabular-nums;color:white}.product-countdown-note{font-size:11px;color:var(--muted);margin-top:5px}.locked-price{display:none!important}.locked-buy{opacity:.48;cursor:not-allowed!important;transform:none!important}.release-live .product-lock{display:none}.release-live .locked-price{display:flex!important}.release-live .locked-buy{opacity:1;cursor:pointer!important}
+    @media(max-width:860px){.release-bar{top:69px}.release-inner{gap:8px;padding:10px 0}.release-copy{width:100%;font-size:14px}.release-countdown{font-size:28px}.product-countdown{font-size:19px}.proofBox{grid-template-columns:1fr;padding:18px}.reviewStack{grid-template-columns:1fr;transform:none}.reviewCard:nth-child(even),.reviewCard:nth-child(3){transform:none}.navlinks{display:none}.heroGrid,.priority,.grid,.how{grid-template-columns:1fr}.logoStage{min-height:360px}.trust{grid-template-columns:repeat(2,1fr)}.sectionHead,.final{display:block}.final .btn{margin-top:18px;width:100%}.h1{letter-spacing:-1.4px}.hero{padding-top:34px}.badgeFloat{position:relative;right:auto;bottom:auto;margin-top:-26px}.productBody{padding:16px}.product{border-radius:22px}}
+ </style>
+
+
+
 </head>
 <body>
-  <header><div class="wrap nav"><a class="brand" href="#top"><img src="/assets/images/logo.jpeg" alt="Logo FUTrek"><span>FUTrek</span></a><nav class="navlinks"><a href="#oferty">Oferty</a><a href="#opinie">Opinie</a><a href="#jak">Zakup</a><a href="#kontakt">FAQ</a></nav><button class="navcta cart-link" id="open-cart" type="button">Koszyk <span class="cart-count" id="cart-count">0</span></button></div></header>
+  <header><div class="wrap nav"><a class="brand" href="#top"><img src="logo.jpeg" alt="Logo FUTrek"><span>FUTrek</span></a><nav class="navlinks"><a href="#oferty">Oferty</a><a href="#opinie">Opinie</a><a href="#jak">Zakup</a><a href="#kontakt">FAQ</a></nav><a class="navcta cart-link" href="kasa.html">Koszyk <span class="cart-count" id="cart-count">0</span></a></div></header>
+  <div class="release-bar" id="release-bar"><div class="release-inner"><div class="release-copy"><small>Premiera kursów FC27</small>Wróć do nas 25.09.2026</div><div class="release-countdown" id="release-countdown">-- dni --:--:--</div></div></div>
   <main id="top">
-    <section class="hero"><div class="wrap heroGrid"><div><div class="eyebrow pill">🐺 EA FC 26 • analizy, kursy i porady</div><h1 class="h1"><span>Wejdź na wyższy poziom</span> z FUTrek.</h1><div class="ctaRow"><a class="btn primary" href="#top-oferty">🔥 Zobacz najlepsze oferty</a><a class="btn secondary" href="#kursy">Sprawdź kursy</a></div><div class="trust" aria-label="Wyniki FUTrek"><div class="metric"><b>3.7M</b><span>wyświetleń filmów</span></div><div class="metric"><b>118.5K</b><span>polubień</span></div><div class="metric"><b>10.7K</b><span>udostępnień</span></div><div class="metric"><b>700+</b><span>zadowolonych graczy</span></div></div></div><div class="logoStage"><div class="glow"></div><img class="heroLogo" src="/assets/images/laptop.jpeg" alt="Zdjęcie Laptopa"><div class="badgeFloat">Zaufanie budowane contentem: <b>miliony wyświetleń</b> i społeczność graczy EA FC.</div></div></div></section>
+    <section class="hero"><div class="wrap heroGrid"><div><div class="eyebrow pill">🐺 EA FC 27 • analizy, kursy i porady</div><h1 class="h1"><span>Wejdź na wyższy poziom</span> z FUTrek.</h1><div class="ctaRow"><a class="btn primary" href="#top-oferty">🔥 Zobacz najlepsze oferty</a><a class="btn secondary" href="#kursy">Sprawdź kursy</a></div><div class="trust" aria-label="Wyniki FUTrek"><div class="metric"><b>4.8M</b><span>wyświetleń filmów</span></div><div class="metric"><b>158K</b><span>polubień</span></div><div class="metric"><b>17.1K</b><span>udostępnień</span></div><div class="metric"><b>600+</b><span>zadowolonych graczy</span></div></div></div><div class="logoStage"><div class="glow"></div><img class="heroLogo" src="laptop.jpeg" alt="Zdjęcie Laptopa"><div class="badgeFloat">Zaufanie budowane contentem: <b>miliony wyświetleń</b> i społeczność graczy EA FC.</div></div></div></section>
 
     <section id="opinie" class="proofStrip"><div class="wrap"><div class="proofBox"><div class="proofCopy"><span class="pill">⭐ Opinie graczy</span><h2>Zanim wybierzesz ofertę...</h2><p>Zobacz opinie graczy, którzy już wdrażają wskazówki FUTrek w swojej grze.</p><div class="proofStats"><span>5/5 oceny</span><span>realna poprawa gry </span><span>konkretne wskazówki</span><span>szybka nauka</span></div><div class="reviewPhoto">Dołącz do społeczności FUTrek i ciesz się grą na nowo!</div></div><div class="reviewStack" aria-label="Opinie klientów FUTrek"><article class="reviewCard"><div class="reviewAvatar">P</div><h3>Paweł</h3><div class="reviewStars">★★★★★</div><p>„dzięki za solidną dawke informacji do nauki, widze juz sporą poprawę w mojej grze i wbiłem 4 dywizje w rivals dzięki temu, polecam”</p></article><article class="reviewCard"><div class="reviewAvatar">R</div><h3>Robert</h3><div class="reviewStars">★★★★★</div><p>„przeczytanie wszystkiego zajęło newiele i o ponad połowie rzeczy nie wiedziałem, bardzo dobrze wytłumaczone”</p></article><article class="reviewCard"><div class="reviewAvatar">K</div><h3>Kuba</h3><div class="reviewStars">★★★★★</div><p>„świetny poradnik, dużo można się dowiedzieć o rzeczach których nie wiedziałem, polecam”</p></article><article class="reviewCard"><div class="reviewAvatar">P</div><h3>Pablo</h3><div class="reviewStars">★★★★★</div><p>„Jak narazie pomału wdrażam do gry te porady i mogę powiedzieć że idzie mi lepiej już niż co było wcześniej jestem bardzo zadowolony🙂”</p></article></div></div></div></section>
     <section id="oferty"><div class="wrap"><div class="sectionHead"><div><span class="pill">Najczęściej kupowane</span><h2 id="top-oferty">Wybierz to, co daje największy efekt...</h2></div><p>Wybierz rozwiązanie dopasowane do swojej gry.</p></div><div class="priority">
-      <article class="product hot"><span class="topLabel">NAJSZYBSZY EFEKT</span><div class="productBody"><img class="productImg priorityImg" src="/assets/images/analiza.png" alt="Analiza składu FUTrek"><h3>📊 BUILD YOUR TEAM — Uczyń swoją drużynę niepokonaną!</h3><p>Personalna analiza i sugestie dla Twojego składu. Najlepszy wybór, jeśli nie wiesz, kogo kupić, jakie role ustawić i gdzie czujesz największe braki.</p><div class="mini"><span>analiza składu</span><span>konkretne zmiany</span><span>specjalnie dla Ciebie</span></div><div class="price"><s>34,99 zł</s><strong>24,99 zł</strong></div><button class="btn primary payment add-to-cart" data-id="build-your-team" data-name="BUILD YOUR TEAM — Analiza składu" data-price="24.99">Dodaj do koszyka</button></div></article>
-      <article class="product hot"><span class="topLabel">NAJLEPSZA WARTOŚĆ</span><div class="productBody"><img class="productImg priorityImg" src="/assets/images/pakiet.png" alt="Pełny pakiet FUTrek"><h3>👑 FULL GAME CONTROL — pakiet 3 kursów</h3><p>Obrona, ofensywa i mental w jednym pakiecie. Dla gracza, który chce poznać wszystkie niezbędne porady i pragnie pozbyć się wszystkich swoich problemów.      
-      </p><div class="mini"><span>Area Control</span><span>Goal Machine</span><span>Wild Mentality</span></div><div class="price"><s>99,99 zł</s><strong>59,99 zł</strong></div><button class="btn primary payment add-to-cart" data-id="full-game-control" data-name="FULL GAME CONTROL — pakiet 3 kursów" data-price="59.99">Dodaj do koszyka</button></div></article>
+      <article class="product hot"><span class="topLabel">NAJSZYBSZY EFEKT</span><div class="productBody"><h3>📊 BUILD YOUR TEAM — Uczyń swoją drużynę niepokonaną!</h3><p>Personalna analiza i sugestie dla Twojego składu. Najlepszy wybór, jeśli nie wiesz, kogo kupić, jakie role ustawić i gdzie czujesz największe braki.</p><div class="mini"><span>analiza składu</span><span>konkretne zmiany</span><span>specjalnie dla Ciebie</span></div><div class="product-lock"><strong>Cena zostanie odblokowana za</strong><div class="product-countdown">-- dni --:--:--</div><div class="product-countdown-note">Premiera 25.09.2026</div></div><div class="price locked-price"><strong>29,99 zł</strong></div><button class="btn primary payment add-to-cart locked-buy" disabled data-id="build-your-team" data-name="BUILD YOUR TEAM — Analiza składu" data-price="29.99">Dostępne od 25.09.2026</button></div></article>
+      <article class="product hot"><span class="topLabel">NAJLEPSZA WARTOŚĆ</span><div class="productBody"><h3>👑 FULL GAME CONTROL — Pakiet 3 kursów</h3><p>Obrona, ofensywa i mental w jednym pakiecie. Dla gracza, który chce poznać wszystkie niezbędne porady i pragnie pozbyć się wszystkich swoich problemów.      
+      </p><div class="mini"><span>Area Control</span><span>Goal Machine</span><span>Wild Mentality</span></div><div class="product-lock"><strong>Cena zostanie odblokowana za</strong><div class="product-countdown">-- dni --:--:--</div><div class="product-countdown-note">Premiera 25.09.2026</div></div><div class="price locked-price"><s>109,99 zł</s><strong>99,99 zł</strong></div><button class="btn primary payment add-to-cart locked-buy" disabled data-id="full-game-control" data-name="FULL GAME CONTROL — pakiet 3 kursów" data-price="99.99">Dostępne od 25.09.2026</button></div></article>
     </div></div></section>
     <section id="kursy"><div class="wrap"><div class="sectionHead"><div><span class="pill">Kursy online</span><h2>Wybierz konkretny problem w swojej grze</h2></div><p>Każdy kurs ma jasny cel: mniej głupich bramek, więcej sytuacji albo lepsze decyzje pod presją.</p></div><div class="grid">
-      <article class="product small"><div class="productBody"><img class="productImg" src="/assets/images/obrona.png" alt="Area Control"><h3>🥊 AREA CONTROL</h3><p>Jak przestać tracić głupie bramki w EA FC 26. Zasady odpowiedzialnej i skutecznej gry w obronie.</p><div class="price"><strong>34,99 zł</strong></div><button class="btn secondary payment add-to-cart" data-id="area-control" data-name="AREA CONTROL" data-price="34.99">Dodaj do koszyka</button></div></article>
-      <article class="product small"><div class="productBody"><img class="productImg" src="/assets/images/atak.png" alt="Goal Machine"><h3>⚽ GOAL MACHINE</h3><p>Jak strzelać więcej goli w EA FC 26. Najskuteczniejsze metody gry ofensywnej i zdobywania bramek.</p><div class="price"><strong>34,99 zł</strong></div><button class="btn secondary payment add-to-cart" data-id="goal-machine" data-name="GOAL MACHINE" data-price="34.99">Dodaj do koszyka</button></div></article>
-      <article class="product small"><div class="productBody"><img class="productImg" src="/assets/images/mentality.png" alt="Wild Mentality"><h3>🐺🧠 WILD MENTALITY</h3><p>Jak opanować emocje i podejmować lepsze decyzje. Wyeliminuj stres i wykorzystaj umiejętności w meczu.</p><div class="price"><strong>34,99 zł</strong></div><button class="btn secondary payment add-to-cart" data-id="wild-mentality" data-name="WILD MENTALITY" data-price="34.99">Dodaj do koszyka</button></div></article>
+      <article class="product small"><div class="productBody"><img class="productImg" src="obrona.png" alt="Area Control"><h3>🥊 AREA CONTROL</h3><p>Jak przestać tracić głupie bramki w EA FC 27. Zasady odpowiedzialnej i skutecznej gry w obronie.</p><div class="product-lock"><strong>Cena zostanie odblokowana za</strong><div class="product-countdown">-- dni --:--:--</div><div class="product-countdown-note">Premiera 25.09.2026</div></div><div class="price locked-price"><strong>39,99 zł</strong></div><button class="btn secondary payment add-to-cart locked-buy" disabled data-id="area-control" data-name="AREA CONTROL" data-price="39.99">Dostępne od 25.09.2026</button></div></article>
+      <article class="product small"><div class="productBody"><img class="productImg" src="atak.png" alt="Goal Machine"><h3>⚽ GOAL MACHINE</h3><p>Jak strzelać więcej goli w EA FC 27. Najskuteczniejsze metody gry ofensywnej i zdobywania bramek.</p><div class="product-lock"><strong>Cena zostanie odblokowana za</strong><div class="product-countdown">-- dni --:--:--</div><div class="product-countdown-note">Premiera 25.09.2026</div></div><div class="price locked-price"><strong>39,99 zł</strong></div><button class="btn secondary payment add-to-cart locked-buy" disabled data-id="goal-machine" data-name="GOAL MACHINE" data-price="39.99">Dostępne od 25.09.2026</button></div></article>
+      <article class="product small"><div class="productBody"><img class="productImg" src="mentality.png" alt="Wild Mentality"><h3>🐺🧠 WILD MENTALITY</h3><p>Jak opanować emocje i podejmować lepsze decyzje. Wyeliminuj stres i wykorzystaj umiejętności w meczu.</p><div class="product-lock"><strong>Cena zostanie odblokowana za</strong><div class="product-countdown">-- dni --:--:--</div><div class="product-countdown-note">Premiera 25.09.2026</div></div><div class="price locked-price"><strong>39,99 zł</strong></div><button class="btn secondary payment add-to-cart locked-buy" disabled data-id="wild-mentality" data-name="WILD MENTALITY" data-price="39.99">Dostępne od 25.09.2026</button></div></article>
     </div></div></section>
     <section id="jak"><div class="wrap"><div class="sectionHead"><div><span class="pill">Prosty proces</span><h2>Zakupy bez komplikacji</h2></div></div><div class="how"><div class="step"><b>01</b><h3>Wybierasz ofertę</h3><p>Analiza składu, pojedynczy kurs albo pakiet Full Game Control.</p></div><div class="step"><b>02</b><h3>Dodajesz do koszyka</h3><p>Możesz wybrać jeden lub kilka produktów i zobaczyć łączną kwotę przed płatnością.</p></div><div class="step"><b>03</b><h3>Przechodzisz do kasy</h3><p>W kasie sprawdzasz zamówienie i przechodzisz do finalizacji płatności.</p></div></div><div class="final"><div><h2>Nie wiesz, co wybrać?</h2><p>Najbezpieczniejszy wybór: analiza składu, jeśli chcesz poprawić aktualną drużynę. Full Game Control, jeśli chcesz poprawić całą grę.</p></div><a class="btn primary" href="#top-oferty">Wróć do najlepszych ofert</a></div></div></section>
   </main>
-  <footer id="kontakt"><div class="wrap">© FUTrek — Analizy i kursy EA FC 26</div></footer>
-
-
-  <div class="cart-overlay" id="cart-overlay"></div>
-  <aside class="cart-drawer" id="cart-drawer" aria-label="Koszyk">
-    <div class="drawer-head">
-      <h2>Twój koszyk</h2>
-      <button class="drawer-close" id="close-cart" type="button" aria-label="Zamknij koszyk">×</button>
-    </div>
-    <div class="drawer-items" id="drawer-items"></div>
-    <div class="drawer-foot">
-      <div class="drawer-total"><span>Razem</span><strong id="drawer-total">0,00 zł</strong></div>
-      <a class="drawer-checkout disabled" id="drawer-checkout" href="/kasa.html">Przejdź do kasy</a>
-    </div>
-  </aside>
+  <footer id="kontakt"><div class="wrap">© FUTrek — Analizy i kursy EA FC 27</div></footer>
 
   <div class="cart-toast" id="cart-toast">Dodano produkt do koszyka</div>
-  
+ 
+ 
+ 
+ <script>
+    const CART_KEY = "futrek_cart";
+    const RELEASE_AT = new Date("2026-09-25T00:00:00+02:00");
+    const RELEASE_PRODUCTS = {
+      "build-your-team": 29.99,
+      "full-game-control": 99.99,
+      "area-control": 39.99,
+      "goal-machine": 39.99,
+      "wild-mentality": 39.99
+    };
+
+    function isReleased() { return Date.now() >= RELEASE_AT.getTime(); }
+
+    function formatCountdown(ms) {
+      const total = Math.max(0, Math.floor(ms / 1000));
+      const days = Math.floor(total / 86400);
+      const hours = Math.floor((total % 86400) / 3600);
+      const minutes = Math.floor((total % 3600) / 60);
+      const seconds = total % 60;
+      return `${String(days).padStart(2,"0")} dni ${String(hours).padStart(2,"0")}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+    }
+
+    function normalizeReleaseCart() {
+      let cart = getCart();
+      if (isReleased()) {
+        cart = cart.map(item => RELEASE_PRODUCTS[item.id] != null ? {...item, price: RELEASE_PRODUCTS[item.id]} : item);
+      } else {
+        cart = cart.filter(item => RELEASE_PRODUCTS[item.id] == null);
+      }
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    }
+
+    function updateReleaseState() {
+      const released = isReleased();
+      document.body.classList.toggle("release-live", released);
+      const bar = document.getElementById("release-bar");
+      document.querySelectorAll(".add-to-cart").forEach(button => {
+        if (RELEASE_PRODUCTS[button.dataset.id] == null) return;
+        button.disabled = !released;
+        button.textContent = released ? "Dodaj do koszyka" : "Dostępne od 25.09.2026";
+      });
+      if (released) {
+        if (bar) bar.remove();
+        normalizeReleaseCart();
+        updateCartCount();
+        return true;
+      }
+      const text = formatCountdown(RELEASE_AT.getTime() - Date.now());
+      const main = document.getElementById("release-countdown");
+      if (main) main.textContent = text;
+      document.querySelectorAll(".product-countdown").forEach(el => el.textContent = text);
+      return false;
+    }
 
 
-  <div class="browser-modal" id="browser-modal" aria-hidden="true">
-    <div class="browser-modal__backdrop" id="browser-modal-backdrop"></div>
-    <section class="browser-modal__card" role="dialog" aria-modal="true" aria-labelledby="browser-modal-title">
-      <button class="browser-modal__close" id="browser-modal-close" type="button" aria-label="Zamknij">×</button>
-      <div class="browser-modal__icon">↗</div>
-      <h2 id="browser-modal-title">Dokończ zakup w Safari lub Chrome</h2>
-      <p>TikTok blokuje bezpieczne płatności w swojej przeglądarce.</p>
-      <ol>
-        <li>Kliknij <strong>•••</strong> w prawym górnym rogu TikToka.</li>
-        <li>Wybierz <strong>Otwórz w przeglądarce</strong>.</li>
-        <li>Jeśli tej opcji nie ma, skopiuj link poniżej i wklej go do Safari.</li>
-      </ol>
-      <button class="browser-modal__copy" id="copy-checkout-link" type="button">Skopiuj link do kasy</button>
-      <p class="browser-modal__status" id="copy-status" aria-live="polite"></p>
-    </section>
-  </div>
+    function getCart() {
+      try {
+        return JSON.parse(localStorage.getItem(CART_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
 
-  <script src="/assets/js/index.js"></script>
+    function saveCart(cart) {
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
+      updateCartCount();
+    }
+
+    function updateCartCount() {
+      const count = getCart().reduce((sum, item) => sum + item.quantity, 0);
+      const badge = document.getElementById("cart-count");
+      if (badge) badge.textContent = count;
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById("cart-toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(window.cartToastTimer);
+      window.cartToastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    document.querySelectorAll(".add-to-cart").forEach(button => {
+      button.addEventListener("click", () => {
+        if (button.disabled || !isReleased()) return;
+        const cart = getCart();
+        const existing = cart.find(item => item.id === button.dataset.id);
+
+        if (existing) {
+          existing.quantity += 1;
+        } else {
+          cart.push({
+            id: button.dataset.id,
+            name: button.dataset.name,
+            price: Number(button.dataset.price),
+            quantity: 1
+          });
+        }
+
+        saveCart(cart);
+        showToast("Dodano do koszyka: " + button.dataset.name);
+      });
+    });
+
+    normalizeReleaseCart();
+    updateReleaseState();
+    const releaseTimer = setInterval(() => { if (updateReleaseState()) clearInterval(releaseTimer); }, 1000);
+    updateCartCount();
+  </script>
+
+
 </body>
 </html>
