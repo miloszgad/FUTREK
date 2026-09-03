@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Ankieta do personalnej analizy składu FUTrek w EA FC 27." />
+  <title>Analiza składu — FUTrek</title>
+  <link rel="icon" href="assets/images/logo.jpeg" />
+  <link rel="stylesheet" href="assets/css/ankieta.css" />
+</head>
+<body>
+  <header class="survey-header">
+    <div class="survey-header__inner">
+      <a class="survey-logo" href="/" aria-label="FUTrek — strona główna">
+        <img src="assets/images/logo.jpeg" alt="Logo FUTrek" />
+      </a>
+
+      <div class="progress" aria-live="polite">
+        <div class="progress__meta">
+          <strong id="progress-percent">0%</strong>
+          <span id="progress-left">Pozostało 9 odpowiedzi</span>
+        </div>
+        <div class="progress__track" aria-hidden="true">
+          <div class="progress__bar" id="progress-bar"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="survey-shell">
+    <section class="survey-intro" aria-labelledby="survey-title">
+      <span class="eyebrow">🐺 BUILD YOUR TEAM</span>
+      <h1 id="survey-title">Zbudujmy skład dopasowany do <span>Twojej gry.</span></h1>
+      <p>Odpowiedz na kilka pytań. Im dokładniejsze informacje podasz, tym lepiej dopasujemy przebudowę składu do Twojego budżetu, stylu i oczekiwań.</p>
+      <div class="save-note" id="save-note">Wersja testowa: postęp tekstowy zapisuje się automatycznie w tej przeglądarce.</div>
+    </section>
+
+    <form id="analysis-form" class="survey-form" novalidate>
+      <section class="question-card" data-question="email">
+        <div class="question-number">01</div>
+        <div class="question-content">
+          <label class="question-title" for="email">Twój adres e-mail</label>
+          <p class="question-help">Użyj adresu powiązanego z zakupem analizy.</p>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="np. gracz@email.pl" required />
+          <p class="field-error" data-error-for="email"></p>
+        </div>
+      </section>
+
+      <section class="question-card" data-question="name">
+        <div class="question-number">02</div>
+        <div class="question-content">
+          <label class="question-title" for="name">Jak masz na imię?</label>
+          <input id="name" name="name" type="text" autocomplete="given-name" placeholder="Twoje imię" required />
+          <p class="field-error" data-error-for="name"></p>
+        </div>
+      </section>
+
+      <section class="question-card" data-question="division">
+        <div class="question-number">03</div>
+        <div class="question-content">
+          <label class="question-title" for="division">W której dywizji Rivals obecnie grasz?</label>
+          <select id="division" name="division" required>
+            <option value="">Wybierz dywizję</option>
+            <option>Elite Division</option>
+            <option>Dywizja 1</option>
+            <option>Dywizja 2</option>
+            <option>Dywizja 3</option>
+            <option>Dywizja 4</option>
+            <option>Dywizja 5</option>
+            <option>Dywizja 6</option>
+            <option>Dywizja 7</option>
+            <option>Dywizja 8</option>
+            <option>Dywizja 9</option>
+            <option>Dywizja 10</option>
+            <option>Nie gram w Rivals</option>
+          </select>
+          <p class="field-error" data-error-for="division"></p>
+        </div>
+      </section>
+
+      <section class="question-card" data-question="budget">
+        <div class="question-number">04</div>
+        <div class="question-content">
+          <label class="question-title" for="budget">Jakim budżetem w coinsach dysponujesz?</label>
+          <p class="question-help">Podaj kwotę, którą możemy realnie przeznaczyć na zmiany.</p>
+          <div class="input-with-suffix">
+            <input id="budget" name="budget" type="number" min="0" step="1000" inputmode="numeric" placeholder="500000" required />
+            <span>coins</span>
+          </div>
+          <p class="field-error" data-error-for="budget"></p>
+        </div>
+      </section>
+
+      <fieldset class="question-card" data-question="playStyle">
+        <legend class="sr-only">Jak najczęściej lubisz grać?</legend>
+        <div class="question-number">05</div>
+        <div class="question-content">
+          <div class="question-title">Jak najczęściej lubisz grać?</div>
+          <p class="question-help">Możesz wybrać kilka odpowiedzi.</p>
+          <div class="choice-grid">
+            <label class="choice"><input type="checkbox" name="playStyle" value="Cierpliwe budowanie akcji" /><span>Cierpliwe budowanie akcji</span></label>
+            <label class="choice"><input type="checkbox" name="playStyle" value="Krótkie podania" /><span>Krótkie podania</span></label>
+            <label class="choice"><input type="checkbox" name="playStyle" value="Długie podania" /><span>Długie podania</span></label>
+            <label class="choice"><input type="checkbox" name="playStyle" value="Kontry" /><span>Kontry</span></label>
+            <label class="choice"><input type="checkbox" name="playStyle" value="Drybling i sztuczki" /><span>Drybling / sztuczki</span></label>
+            <label class="choice"><input type="checkbox" name="playStyle" value="Gra skrzydłami" /><span>Gra skrzydłami</span></label>
+          </div>
+          <p class="field-error" data-error-for="playStyle"></p>
+        </div>
+      </fieldset>
+
+      <fieldset class="question-card" data-question="favoritePlaystyles">
+        <legend class="sr-only">Które PlayStyles cenisz najbardziej?</legend>
+        <div class="question-number">06</div>
+        <div class="question-content">
+          <div class="question-title">Które PlayStyles cenisz najbardziej?</div>
+          <p class="question-help">Zaznacz wszystkie, które szczególnie lubisz mieć u swoich zawodników.</p>
+
+          <div class="playstyle-grid">
+            <label class="playstyle-card">
+              <input type="checkbox" name="favoritePlaystyles" value="Przechwyt" />
+              <span class="playstyle-image"><img src="assets/images/playstyles/hak.png" alt="" /></span>
+              <span class="playstyle-label">Przechwyt</span>
+            </label>
+            <label class="playstyle-card">
+              <input type="checkbox" name="favoritePlaystyles" value="Tiki Taka" />
+              <span class="playstyle-image"><img src="assets/images/playstyles/tiki.png" alt="" /></span>
+              <span class="playstyle-label">Tiki Taka</span>
+            </label>
+            <label class="playstyle-card">
+              <input type="checkbox" name="favoritePlaystyles" value="Podania Prostopadłe" />
+              <span class="playstyle-image"><img src="assets/images/playstyles/prosto.png" alt="" /></span>
+              <span class="playstyle-label">Podania prostopadłe</span>
+            </label>
+            <label class="playstyle-card">
+              <input type="checkbox" name="favoritePlaystyles" value="Podania na dobieg" />
+              <span class="playstyle-image"><img src="assets/images/playstyles/dobieg.png" alt="" /></span>
+              <span class="playstyle-label">Podania na dobieg</span>
+            </label>
+            <label class="playstyle-card">
+              <input type="checkbox" name="favoritePlaystyles" value="Strzały Finezyjne" />
+              <span class="playstyle-image"><img src="assets/images/playstyles/finess.png" alt="" /></span>
+              <span class="playstyle-label">Strzały finezyjne</span>
+            </label>
+            <label class="playstyle-card">
+              <input type="checkbox" name="favoritePlaystyles" value="Low Driven" />
+              <span class="playstyle-image"><img src="assets/images/playstyles/lowdriven.png" alt="" /></span>
+              <span class="playstyle-label">Low Driven</span>
+            </label>
+          </div>
+
+          <label class="other-field" for="other-playstyle">
+            <span>Inny PlayStyle?</span>
+            <input id="other-playstyle" name="otherPlaystyle" type="text" placeholder="Wpisz własną odpowiedź" />
+          </label>
+          <p class="field-error" data-error-for="favoritePlaystyles"></p>
+        </div>
+      </fieldset>
+
+      <section class="question-card" data-question="squadImage">
+        <div class="question-number">07</div>
+        <div class="question-content">
+          <label class="question-title" for="squad-image">Wyślij aktualne zdjęcie swojego składu</label>
+          <p class="question-help">Najlepiej prześlij czytelny screen całej jedenastki wraz z ławką, jeśli ma znaczenie dla przebudowy.</p>
+          <label class="file-drop" for="squad-image">
+            <span class="file-drop__icon">＋</span>
+            <strong id="file-label">Dodaj zdjęcie składu</strong>
+            <span>PNG, JPG lub WEBP</span>
+          </label>
+          <input class="file-input" id="squad-image" name="squadImage" type="file" accept="image/png,image/jpeg,image/webp" required />
+          <div class="file-preview" id="file-preview" hidden>
+            <img id="file-preview-image" alt="Podgląd przesłanego składu" />
+          </div>
+          <p class="field-error" data-error-for="squadImage"></p>
+        </div>
+      </section>
+
+      <fieldset class="question-card" data-question="rebuildGoals">
+        <legend class="sr-only">Na czym najbardziej zależy Ci przy przebudowie?</legend>
+        <div class="question-number">08</div>
+        <div class="question-content">
+          <div class="question-title">Na czym najbardziej zależy Ci przy przebudowie?</div>
+          <p class="question-help">Wybierz maksymalnie 3 najważniejsze priorytety.</p>
+          <div class="choice-grid choice-grid--goals" id="rebuild-goals">
+            <label class="choice"><input type="checkbox" name="rebuildGoals" value="Maksymalna meta i skuteczność" /><span>Maksymalna meta i skuteczność</span></label>
+            <label class="choice"><input type="checkbox" name="rebuildGoals" value="Pełna przebudowa od podstaw" /><span>Pełna przebudowa od podstaw</span></label>
+            <label class="choice"><input type="checkbox" name="rebuildGoals" value="Tylko kilka konkretnych zmian" /><span>Tylko kilka konkretnych zmian</span></label>
+            <label class="choice"><input type="checkbox" name="rebuildGoals" value="Skład bardziej pod fun niż metę" /><span>Skład bardziej pod fun niż metę</span></label>
+            <label class="choice"><input type="checkbox" name="rebuildGoals" value="Poprawa najsłabszych pozycji" /><span>Poprawa najsłabszych pozycji</span></label>
+            <label class="choice"><input type="checkbox" name="rebuildGoals" value="Lepsza chemia całego składu" /><span>Lepsza chemia całego składu</span></label>
+            <label class="choice"><input type="checkbox" name="rebuildGoals" value="Większa szybkość i dynamika" /><span>Większa szybkość i dynamika</span></label>
+            <label class="choice"><input type="checkbox" name="rebuildGoals" value="Mocniejsza defensywa" /><span>Mocniejsza defensywa</span></label>
+            <label class="choice"><input type="checkbox" name="rebuildGoals" value="Lepszy środek pola i kontrola meczu" /><span>Lepszy środek pola i kontrola meczu</span></label>
+            <label class="choice"><input type="checkbox" name="rebuildGoals" value="Skuteczniejszy atak" /><span>Skuteczniejszy atak</span></label>
+            <label class="choice"><input type="checkbox" name="rebuildGoals" value="Dopasowanie składu do mojego stylu gry" /><span>Dopasowanie do mojego stylu gry</span></label>
+          </div>
+          <div class="selection-counter"><span id="goal-count">0</span>/3 wybrane</div>
+          <p class="field-error" data-error-for="rebuildGoals"></p>
+        </div>
+      </fieldset>
+
+      <section class="question-card" data-question="tradablePlayers">
+        <div class="question-number">09</div>
+        <div class="question-content">
+          <label class="question-title" for="tradable-players">Którzy zawodnicy w Twoim składzie są wymienni?</label>
+          <p class="question-help">Wymień karty, które możemy sprzedać i uwzględnić ich wartość przy przebudowie.</p>
+          <textarea id="tradable-players" name="tradablePlayers" rows="4" placeholder="Np. Bellingham, Saliba, Theo Hernández…" required></textarea>
+          <p class="field-error" data-error-for="tradablePlayers"></p>
+        </div>
+      </section>
+
+      <section class="question-card question-card--optional" data-question="mustKeepPlayers">
+        <div class="question-number">10</div>
+        <div class="question-content">
+          <label class="question-title" for="must-keep-players">Czy są zawodnicy, których koniecznie chcesz zostawić?</label>
+          <p class="question-help"><span class="optional-pill">Opcjonalne</span> Mogą być wymienni lub niewymienni — po prostu nie chcesz ich usuwać ze składu.</p>
+          <textarea id="must-keep-players" name="mustKeepPlayers" rows="3" placeholder="Np. Mbappé i Yamal zostają bez względu na wszystko."></textarea>
+        </div>
+      </section>
+
+      <section class="question-card feedback-card" data-question="feedback">
+        <div class="feedback-card__badge">🐺 Pomóż ulepszać FUTrek</div>
+        <div class="question-content">
+          <label class="question-title" for="feedback">Jakiego pytania zabrakło Ci w tej ankiecie?</label>
+          <p class="question-help">Jeśli jest coś, o co powinniśmy zapytać, napisz nam. Dzięki temu kolejne analizy będą jeszcze lepiej dopasowane do graczy.</p>
+          <textarea id="feedback" name="feedback" rows="4" placeholder="Tutaj możesz zostawić swoją sugestię…"></textarea>
+          <span class="optional-note">To pole jest całkowicie opcjonalne.</span>
+        </div>
+      </section>
+
+      <section class="submit-panel">
+        <div>
+          <span class="submit-panel__eyebrow">Ostatni krok</span>
+          <h2>Sprawdź odpowiedzi przed finalnym wysłaniem.</h2>
+          <p>Po podłączeniu Supabase i płatności przycisk zostanie zabezpieczony zasadą: jedna analiza = jedno finalne wysłanie.</p>
+        </div>
+        <button class="submit-button" type="submit">Wyślij odpowiedzi</button>
+        <p class="submit-status" id="submit-status" aria-live="polite"></p>
+      </section>
+    </form>
+  </main>
+
+  <footer class="survey-footer">
+    <img src="assets/images/logo.jpeg" alt="Logo FUTrek" />
+    <strong>FUTrek</strong>
+    <span>Personalne analizy EA FC 27</span>
+  </footer>
+
+  <script src="assets/js/ankieta.js"></script>
+</body>
+</html>
