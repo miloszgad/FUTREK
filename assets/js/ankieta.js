@@ -15,6 +15,7 @@
     "tradablePlayers"
   ];
   const MAX_REBUILD_GOALS = 3;
+  const IS_LOCAL_PREVIEW = window.location.protocol === "file:";
 
   const form = document.getElementById(FORM_ID);
   if (!form) return;
