@@ -1,4 +1,5 @@
 const { createClient } = require("@supabase/supabase-js");
+const crypto = require("crypto");
 
 function json(statusCode, body) {
   return {
@@ -7,6 +8,28 @@ function json(statusCode, body) {
       "Content-Type": "application/json; charset=utf-8"
     },
     body: JSON.stringify(body)
+  };
+}
+
+function parseImageDataUrl(dataUrl) {
+  if (typeof dataUrl !== "string") return null;
+
+  const match = dataUrl.match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/);
+  if (!match) return null;
+
+  const contentType = match[1];
+  const buffer = Buffer.from(match[2], "base64");
+
+  const extensions = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp"
+  };
+
+  return {
+    contentType,
+    extension: extensions[contentType],
+    buffer
   };
 }
 
@@ -41,7 +64,8 @@ exports.handler = async function (event) {
     rebuildGoals,
     tradablePlayers,
     mustKeepPlayers,
-    feedback
+    feedback,
+    squadImage
   } = body;
 
   const parsedBudget = Number(budget);
@@ -60,6 +84,16 @@ exports.handler = async function (event) {
     return json(400, { error: "Brakuje wymaganych danych ankiety." });
   }
 
+  const parsedImage = parseImageDataUrl(squadImage?.dataUrl);
+  if (!parsedImage) {
+    return json(400, { error: "Nie udało się odczytać zdjęcia składu." });
+  }
+
+  const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
+  if (parsedImage.buffer.length > MAX_IMAGE_BYTES) {
+    return json(400, { error: "Zdjęcie składu jest za duże po przygotowaniu do wysyłki." });
+  }
+
   const supabase = createClient(supabaseUrl, supabaseSecretKey, {
     auth: {
       persistSession: false,
@@ -67,9 +101,26 @@ exports.handler = async function (event) {
     }
   });
 
+  const analysisId = crypto.randomUUID();
+  const imagePath = `${analysisId}/squad-${Date.now()}.${parsedImage.extension}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("squad-images")
+    .upload(imagePath, parsedImage.buffer, {
+      contentType: parsedImage.contentType,
+      cacheControl: "3600",
+      upsert: false
+    });
+
+  if (uploadError) {
+    console.error("Supabase Storage error:", uploadError);
+    return json(500, { error: "Nie udało się wysłać zdjęcia składu." });
+  }
+
   const { data, error } = await supabase
     .from("analyses")
     .insert({
+      id: analysisId,
       email: email.trim(),
       name: name.trim(),
       division: division.trim(),
@@ -77,23 +128,33 @@ exports.handler = async function (event) {
       play_style: playStyle,
       playstyles: Array.isArray(favoritePlaystyles) ? favoritePlaystyles : [],
       other_playstyle: otherPlaystyle?.trim() || null,
-      squad_image_url: null,
+      squad_image_url: imagePath,
       rebuild_priorities: rebuildGoals,
       tradeable_players: tradablePlayers.trim(),
       must_keep_players: mustKeepPlayers?.trim() || null,
       feedback: feedback?.trim() || null,
       status: "submitted"
     })
-    .select("id")
+    .select("id, squad_image_url")
     .single();
 
   if (error) {
-    console.error("Supabase error:", error);
+    console.error("Supabase database error:", error);
+
+    const { error: cleanupError } = await supabase.storage
+      .from("squad-images")
+      .remove([imagePath]);
+
+    if (cleanupError) {
+      console.error("Nie udało się posprzątać osieroconego zdjęcia:", cleanupError);
+    }
+
     return json(500, { error: "Nie udało się zapisać analizy w bazie." });
   }
 
   return json(200, {
     success: true,
-    analysisId: data.id
+    analysisId: data.id,
+    squadImagePath: data.squad_image_url
   });
 };

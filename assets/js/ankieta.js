@@ -237,10 +237,62 @@
     scheduleDraftSave();
   });
 
+
+  async function prepareSquadImage(file) {
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!file || !allowedTypes.includes(file.type)) {
+      throw new Error("Zdjęcie składu musi być plikiem JPG, PNG lub WEBP.");
+    }
+
+    const MAX_FILE_SIZE = 8 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+      throw new Error("Zdjęcie składu jest za duże. Maksymalny rozmiar pliku to 8 MB.");
+    }
+
+    const sourceUrl = URL.createObjectURL(file);
+
+    try {
+      const image = await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error("Nie udało się odczytać zdjęcia składu."));
+        img.src = sourceUrl;
+      });
+
+      const MAX_EDGE = 1800;
+      const scale = Math.min(1, MAX_EDGE / Math.max(image.naturalWidth, image.naturalHeight));
+      const width = Math.max(1, Math.round(image.naturalWidth * scale));
+      const height = Math.max(1, Math.round(image.naturalHeight * scale));
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("Nie udało się przygotować zdjęcia do wysłania.");
+
+      context.drawImage(image, 0, 0, width, height);
+
+      const outputType = file.type === "image/png" ? "image/png" : "image/jpeg";
+      const quality = outputType === "image/jpeg" ? 0.84 : undefined;
+      const dataUrl = canvas.toDataURL(outputType, quality);
+
+      return {
+        dataUrl,
+        type: outputType,
+        originalName: file.name
+      };
+    } finally {
+      URL.revokeObjectURL(sourceUrl);
+    }
+  }
+
   async function submitAnalysis() {
     const submitButton = form.querySelector('.submit-button');
     const payload = getDraftData();
     delete payload.savedAt;
+
+    const [squadFile] = squadImageInput.files;
 
     if (IS_LOCAL_PREVIEW) {
       saveDraft();
@@ -249,9 +301,12 @@
     }
 
     submitButton.disabled = true;
-    submitStatus.textContent = "Wysyłamy odpowiedzi…";
+    submitStatus.textContent = "Przygotowujemy zdjęcie i wysyłamy odpowiedzi…";
 
     try {
+      const preparedImage = await prepareSquadImage(squadFile);
+      payload.squadImage = preparedImage;
+
       const response = await fetch("/.netlify/functions/save-analysis", {
         method: "POST",
         headers: {
