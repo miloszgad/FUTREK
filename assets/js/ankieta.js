@@ -3,6 +3,7 @@
 
   const FORM_ID = "analysis-form";
   const DRAFT_KEY = "futrek_analysis_draft_v1";
+  const ACCESS_KEY = "futrek_analysis_access_v1";
   const REQUIRED_QUESTIONS = [
     "email",
     "name",
@@ -29,9 +30,35 @@
   const filePreview = document.getElementById("file-preview");
   const filePreviewImage = document.getElementById("file-preview-image");
   const submitStatus = document.getElementById("submit-status");
+  const saveNote = document.getElementById("save-note");
 
   let hasSquadImage = false;
   let draftTimer = null;
+  let remoteSaveInFlight = false;
+  let remoteSaveQueued = false;
+  let currentImagePath = null;
+
+  function createRandomSecret() {
+    const bytes = new Uint8Array(32);
+    crypto.getRandomValues(bytes);
+    return [...bytes].map(byte => byte.toString(16).padStart(2, "0")).join("");
+  }
+
+  function getAccess() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(ACCESS_KEY) || "null");
+      if (stored?.id && stored?.secret) return stored;
+    } catch {}
+
+    const access = {
+      id: crypto.randomUUID(),
+      secret: createRandomSecret()
+    };
+    localStorage.setItem(ACCESS_KEY, JSON.stringify(access));
+    return access;
+  }
+
+  const access = getAccess();
 
   function checkedValues(name) {
     return [...form.querySelectorAll(`input[name="${name}"]:checked`)].map(input => input.value);
@@ -51,8 +78,9 @@
       case "name": return hasText("name");
       case "division": return hasText("division");
       case "budget": {
-        const value = Number(document.getElementById("budget").value);
-        return Number.isFinite(value) && value >= 0 && document.getElementById("budget").value !== "";
+        const input = document.getElementById("budget");
+        const value = Number(input.value);
+        return Number.isFinite(value) && value >= 0 && input.value !== "";
       }
       case "playStyle": return checkedValues("playStyle").length > 0;
       case "favoritePlaystyles": return checkedValues("favoritePlaystyles").length > 0 || hasText("other-playstyle");
@@ -72,7 +100,7 @@
     progressPercent.textContent = `${percent}%`;
     progressLeft.textContent = left === 0
       ? "Wszystkie wymagane odpowiedzi gotowe"
-      : `Pozostało ${left} ${left === 1 ? "odpowiedź" : left >= 2 && left <= 4 ? "odpowiedzi" : "odpowiedzi"}`;
+      : `Pozostało ${left} ${left === 1 ? "odpowiedź" : "odpowiedzi"}`;
     progressBar.style.width = `${percent}%`;
 
     REQUIRED_QUESTIONS.forEach(question => {
@@ -110,8 +138,7 @@
     invalid.forEach(question => setError(question, messages[question]));
 
     if (invalid.length > 0) {
-      const firstCard = form.querySelector(`[data-question="${invalid[0]}"]`);
-      firstCard?.scrollIntoView({ behavior: "smooth", block: "center" });
+      form.querySelector(`[data-question="${invalid[0]}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
       return false;
     }
     return true;
@@ -134,17 +161,65 @@
     };
   }
 
-  function saveDraft() {
+  function saveLocalDraft() {
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(getDraftData()));
     } catch (error) {
-      console.warn("Nie udało się zapisać wersji roboczej ankiety.", error);
+      console.warn("Nie udało się zapisać wersji roboczej lokalnie.", error);
+    }
+  }
+
+  function setSaveNote(text) {
+    if (saveNote) saveNote.textContent = text;
+  }
+
+  async function saveRemoteDraft() {
+    if (IS_LOCAL_PREVIEW) return;
+    if (remoteSaveInFlight) {
+      remoteSaveQueued = true;
+      return;
+    }
+
+    remoteSaveInFlight = true;
+    remoteSaveQueued = false;
+    setSaveNote("Zapisywanie postępu…");
+
+    try {
+      const payload = getDraftData();
+      delete payload.savedAt;
+
+      const response = await fetch("/.netlify/functions/save-draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          draftId: access.id,
+          draftSecret: access.secret,
+          ...payload
+        })
+      });
+
+      const result = await response.json().catch(() => ({}));
+      if (response.status === 409 && result.status === "submitted") {
+        lockSubmittedForm();
+        return;
+      }
+      if (!response.ok) throw new Error(result.error || "Nie udało się zapisać postępu.");
+
+      const time = new Date().toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
+      setSaveNote(`Postęp zapisany w chmurze • ${time}`);
+    } catch (error) {
+      console.warn("Autosave Supabase nie powiódł się:", error);
+      setSaveNote("Brak połączenia z chmurą — postęp jest zapisany lokalnie w tej przeglądarce.");
+    } finally {
+      remoteSaveInFlight = false;
+      if (remoteSaveQueued) saveRemoteDraft();
     }
   }
 
   function scheduleDraftSave() {
+    saveLocalDraft();
     clearTimeout(draftTimer);
-    draftTimer = setTimeout(saveDraft, 250);
+    draftTimer = setTimeout(saveRemoteDraft, 700);
   }
 
   function restoreCheckboxes(name, values = []) {
@@ -153,28 +228,73 @@
     });
   }
 
-  function restoreDraft() {
+  function applyDraft(draft) {
+    if (!draft) return;
+    ["email", "name", "division", "budget"].forEach(id => {
+      const element = document.getElementById(id);
+      if (element && draft[id] != null) element.value = draft[id];
+    });
+
+    document.getElementById("other-playstyle").value = draft.otherPlaystyle || "";
+    document.getElementById("tradable-players").value = draft.tradablePlayers || "";
+    document.getElementById("must-keep-players").value = draft.mustKeepPlayers || "";
+    document.getElementById("feedback").value = draft.feedback || "";
+
+    restoreCheckboxes("playStyle", draft.playStyle);
+    restoreCheckboxes("favoritePlaystyles", draft.favoritePlaystyles);
+    restoreCheckboxes("rebuildGoals", draft.rebuildGoals);
+  }
+
+  function restoreLocalDraft() {
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
-      if (!raw) return;
-      const draft = JSON.parse(raw);
-
-      const fields = ["email", "name", "division", "budget"];
-      fields.forEach(id => {
-        const element = document.getElementById(id);
-        if (element && draft[id] != null) element.value = draft[id];
-      });
-
-      document.getElementById("other-playstyle").value = draft.otherPlaystyle || "";
-      document.getElementById("tradable-players").value = draft.tradablePlayers || "";
-      document.getElementById("must-keep-players").value = draft.mustKeepPlayers || "";
-      document.getElementById("feedback").value = draft.feedback || "";
-
-      restoreCheckboxes("playStyle", draft.playStyle);
-      restoreCheckboxes("favoritePlaystyles", draft.favoritePlaystyles);
-      restoreCheckboxes("rebuildGoals", draft.rebuildGoals);
+      if (raw) applyDraft(JSON.parse(raw));
     } catch (error) {
-      console.warn("Nie udało się odtworzyć wersji roboczej ankiety.", error);
+      console.warn("Nie udało się odtworzyć lokalnej wersji roboczej.", error);
+    }
+  }
+
+  async function restoreRemoteDraft() {
+    if (IS_LOCAL_PREVIEW) {
+      setSaveNote("Podgląd lokalny: postęp zapisuje się w tej przeglądarce.");
+      return;
+    }
+
+    setSaveNote("Sprawdzamy zapisany postęp…");
+    try {
+      const response = await fetch("/.netlify/functions/load-draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ draftId: access.id, draftSecret: access.secret })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Nie udało się pobrać postępu.");
+      if (!result.found) {
+        setSaveNote("Postęp będzie zapisywany automatycznie w chmurze.");
+        return;
+      }
+      if (result.status === "submitted") {
+        lockSubmittedForm();
+        return;
+      }
+
+      applyDraft(result.draft);
+      if (result.draft?.squadImagePath) {
+        currentImagePath = result.draft.squadImagePath;
+        hasSquadImage = true;
+        fileLabel.textContent = "Zdjęcie składu jest już zapisane";
+        if (result.draft.signedImageUrl) {
+          filePreviewImage.src = result.draft.signedImageUrl;
+          filePreview.hidden = false;
+        }
+      }
+      saveLocalDraft();
+      updateGoalLimit();
+      updateProgress();
+      setSaveNote("Przywrócono zapisany postęp z chmury.");
+    } catch (error) {
+      console.warn("Nie udało się pobrać draftu z Supabase:", error);
+      setSaveNote("Nie udało się pobrać chmury — używamy zapisu lokalnego.");
     }
   }
 
@@ -182,75 +302,20 @@
     const selected = form.querySelectorAll('input[name="rebuildGoals"]:checked');
     const all = form.querySelectorAll('input[name="rebuildGoals"]');
 
-    if (selected.length > MAX_REBUILD_GOALS && changedInput) {
-      changedInput.checked = false;
-    }
+    if (selected.length > MAX_REBUILD_GOALS && changedInput) changedInput.checked = false;
 
     const finalSelected = form.querySelectorAll('input[name="rebuildGoals"]:checked');
     goalCount.textContent = String(finalSelected.length);
     const atLimit = finalSelected.length >= MAX_REBUILD_GOALS;
-
-    all.forEach(input => {
-      input.disabled = atLimit && !input.checked;
-    });
+    all.forEach(input => { input.disabled = atLimit && !input.checked; });
   }
-
-  function handleImageSelection() {
-    const [file] = squadImageInput.files;
-    hasSquadImage = Boolean(file);
-
-    if (!file) {
-      fileLabel.textContent = "Dodaj zdjęcie składu";
-      filePreview.hidden = true;
-      filePreviewImage.removeAttribute("src");
-      updateProgress();
-      return;
-    }
-
-    fileLabel.textContent = file.name;
-    const reader = new FileReader();
-    reader.addEventListener("load", () => {
-      filePreviewImage.src = reader.result;
-      filePreview.hidden = false;
-    });
-    reader.readAsDataURL(file);
-    updateProgress();
-  }
-
-  function handleBrokenPlaystyleImages() {
-    form.querySelectorAll(".playstyle-image img").forEach(image => {
-      image.addEventListener("error", () => image.classList.add("broken"));
-      if (image.complete && image.naturalWidth === 0) image.classList.add("broken");
-    });
-  }
-
-  form.addEventListener("input", event => {
-    if (event.target.name === "rebuildGoals") updateGoalLimit(event.target);
-    updateProgress();
-    scheduleDraftSave();
-  });
-
-  form.addEventListener("change", event => {
-    if (event.target === squadImageInput) handleImageSelection();
-    if (event.target.name === "rebuildGoals") updateGoalLimit(event.target);
-    updateProgress();
-    scheduleDraftSave();
-  });
-
 
   async function prepareSquadImage(file) {
     const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-    if (!file || !allowedTypes.includes(file.type)) {
-      throw new Error("Zdjęcie składu musi być plikiem JPG, PNG lub WEBP.");
-    }
-
-    const MAX_FILE_SIZE = 8 * 1024 * 1024;
-    if (file.size > MAX_FILE_SIZE) {
-      throw new Error("Zdjęcie składu jest za duże. Maksymalny rozmiar pliku to 8 MB.");
-    }
+    if (!file || !allowedTypes.includes(file.type)) throw new Error("Zdjęcie składu musi być plikiem JPG, PNG lub WEBP.");
+    if (file.size > 8 * 1024 * 1024) throw new Error("Zdjęcie składu jest za duże. Maksymalny rozmiar pliku to 8 MB.");
 
     const sourceUrl = URL.createObjectURL(file);
-
     try {
       const image = await new Promise((resolve, reject) => {
         const img = new Image();
@@ -263,22 +328,16 @@
       const scale = Math.min(1, MAX_EDGE / Math.max(image.naturalWidth, image.naturalHeight));
       const width = Math.max(1, Math.round(image.naturalWidth * scale));
       const height = Math.max(1, Math.round(image.naturalHeight * scale));
-
       const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
-
       const context = canvas.getContext("2d");
       if (!context) throw new Error("Nie udało się przygotować zdjęcia do wysłania.");
-
       context.drawImage(image, 0, 0, width, height);
 
       const outputType = file.type === "image/png" ? "image/png" : "image/jpeg";
-      const quality = outputType === "image/jpeg" ? 0.84 : undefined;
-      const dataUrl = canvas.toDataURL(outputType, quality);
-
       return {
-        dataUrl,
+        dataUrl: canvas.toDataURL(outputType, outputType === "image/jpeg" ? 0.84 : undefined),
         type: outputType,
         originalName: file.name
       };
@@ -287,50 +346,118 @@
     }
   }
 
+  async function saveDraftImage(file) {
+    if (IS_LOCAL_PREVIEW || !file) return;
+    setSaveNote("Zapisywanie zdjęcia składu…");
+    try {
+      const preparedImage = await prepareSquadImage(file);
+      const response = await fetch("/.netlify/functions/save-draft-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          draftId: access.id,
+          draftSecret: access.secret,
+          squadImage: preparedImage
+        })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Nie udało się zapisać zdjęcia.");
+      currentImagePath = result.imagePath;
+      hasSquadImage = true;
+      setSaveNote("Zdjęcie i postęp zostały zapisane w chmurze.");
+      updateProgress();
+    } catch (error) {
+      console.error("Błąd zapisu zdjęcia draftu:", error);
+      setSaveNote("Nie udało się zapisać zdjęcia w chmurze. Spróbuj ponownie lub wyślij ankietę bez opuszczania strony.");
+    }
+  }
+
+  function handleImageSelection() {
+    const [file] = squadImageInput.files;
+    hasSquadImage = Boolean(file) || Boolean(currentImagePath);
+
+    if (!file) {
+      fileLabel.textContent = currentImagePath ? "Zdjęcie składu jest już zapisane" : "Dodaj zdjęcie składu";
+      if (!currentImagePath) {
+        filePreview.hidden = true;
+        filePreviewImage.removeAttribute("src");
+      }
+      updateProgress();
+      return;
+    }
+
+    fileLabel.textContent = file.name;
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      filePreviewImage.src = reader.result;
+      filePreview.hidden = false;
+    });
+    reader.readAsDataURL(file);
+    updateProgress();
+    saveDraftImage(file);
+  }
+
+  function handleBrokenPlaystyleImages() {
+    form.querySelectorAll(".playstyle-image img").forEach(image => {
+      image.addEventListener("error", () => image.classList.add("broken"));
+      if (image.complete && image.naturalWidth === 0) image.classList.add("broken");
+    });
+  }
+
+  function lockSubmittedForm() {
+    form.querySelectorAll("input, select, textarea, button").forEach(element => { element.disabled = true; });
+    submitStatus.textContent = "Ta ankieta została już wysłana i nie można jej ponownie edytować.";
+    setSaveNote("Ankieta wysłana — edycja została zablokowana.");
+  }
+
+  form.addEventListener("input", event => {
+    if (event.target.name === "rebuildGoals") updateGoalLimit(event.target);
+    updateProgress();
+    scheduleDraftSave();
+  });
+
+  form.addEventListener("change", event => {
+    if (event.target === squadImageInput) handleImageSelection();
+    if (event.target.name === "rebuildGoals") updateGoalLimit(event.target);
+    updateProgress();
+    if (event.target !== squadImageInput) scheduleDraftSave();
+  });
+
   async function submitAnalysis() {
-    const submitButton = form.querySelector('.submit-button');
+    const submitButton = form.querySelector(".submit-button");
     const payload = getDraftData();
     delete payload.savedAt;
-
     const [squadFile] = squadImageInput.files;
 
     if (IS_LOCAL_PREVIEW) {
-      saveDraft();
-      submitStatus.textContent = "Podgląd lokalny: ankieta jest poprawnie wypełniona. Odpowiedzi nie zostały wysłane — zapis do Supabase działa po uruchomieniu przez Netlify.";
+      saveLocalDraft();
+      submitStatus.textContent = "Podgląd lokalny: ankieta jest poprawnie wypełniona. Dane nie zostały wysłane do Supabase.";
       return;
     }
 
     submitButton.disabled = true;
-    submitStatus.textContent = "Przygotowujemy zdjęcie i wysyłamy odpowiedzi…";
+    submitStatus.textContent = "Finalizujemy ankietę…";
 
     try {
-      const preparedImage = await prepareSquadImage(squadFile);
-      payload.squadImage = preparedImage;
+      if (squadFile) payload.squadImage = await prepareSquadImage(squadFile);
 
       const response = await fetch("/.netlify/functions/save-analysis", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          draftId: access.id,
+          draftSecret: access.secret,
+          ...payload
+        })
       });
 
-      let result = {};
-      try {
-        result = await response.json();
-      } catch {
-        result = {};
-      }
-
-      if (!response.ok) {
-        throw new Error(result.error || "Nie udało się zapisać analizy.");
-      }
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Nie udało się zapisać analizy.");
 
       localStorage.removeItem(DRAFT_KEY);
       submitStatus.textContent = `Gotowe! Odpowiedzi zostały zapisane. ID analizy: ${result.analysisId}`;
-      form.querySelectorAll("input, select, textarea, button").forEach(element => {
-        element.disabled = true;
-      });
+      setSaveNote("Ankieta wysłana — edycja została zablokowana.");
+      form.querySelectorAll("input, select, textarea, button").forEach(element => { element.disabled = true; });
     } catch (error) {
       console.error("Błąd wysyłania analizy:", error);
       submitStatus.textContent = error.message || "Nie udało się wysłać odpowiedzi. Spróbuj ponownie.";
@@ -341,18 +468,18 @@
   form.addEventListener("submit", async event => {
     event.preventDefault();
     submitStatus.textContent = "";
-
     if (!validateForm()) {
       submitStatus.textContent = "Uzupełnij zaznaczone pola przed wysłaniem.";
       return;
     }
-
-    saveDraft();
+    saveLocalDraft();
+    await saveRemoteDraft();
     await submitAnalysis();
   });
 
-  restoreDraft();
+  restoreLocalDraft();
   updateGoalLimit();
   handleBrokenPlaystyleImages();
   updateProgress();
+  restoreRemoteDraft();
 })();

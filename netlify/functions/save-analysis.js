@@ -1,59 +1,23 @@
-const { createClient } = require("@supabase/supabase-js");
-const crypto = require("crypto");
-
-function json(statusCode, body) {
-  return {
-    statusCode,
-    headers: {
-      "Content-Type": "application/json; charset=utf-8"
-    },
-    body: JSON.stringify(body)
-  };
-}
-
-function parseImageDataUrl(dataUrl) {
-  if (typeof dataUrl !== "string") return null;
-
-  const match = dataUrl.match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/);
-  if (!match) return null;
-
-  const contentType = match[1];
-  const buffer = Buffer.from(match[2], "base64");
-
-  const extensions = {
-    "image/jpeg": "jpg",
-    "image/png": "png",
-    "image/webp": "webp"
-  };
-
-  return {
-    contentType,
-    extension: extensions[contentType],
-    buffer
-  };
-}
+const {
+  json,
+  getSupabase,
+  hashSecret,
+  validDraftCredentials,
+  parseImageDataUrl,
+  normalizeDraftFields,
+  getAuthorizedDraft
+} = require("./_shared/analysis");
 
 exports.handler = async function (event) {
-  if (event.httpMethod !== "POST") {
-    return json(405, { error: "Dozwolona jest tylko metoda POST." });
-  }
-
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
-
-  if (!supabaseUrl || !supabaseSecretKey) {
-    console.error("Brakuje SUPABASE_URL lub SUPABASE_SECRET_KEY w Netlify.");
-    return json(500, { error: "Błąd konfiguracji serwera." });
-  }
+  if (event.httpMethod !== "POST") return json(405, { error: "Dozwolona jest tylko metoda POST." });
 
   let body;
-  try {
-    body = JSON.parse(event.body || "{}");
-  } catch {
-    return json(400, { error: "Nieprawidłowe dane formularza." });
-  }
+  try { body = JSON.parse(event.body || "{}"); }
+  catch { return json(400, { error: "Nieprawidłowe dane formularza." }); }
 
   const {
+    draftId,
+    draftSecret,
     email,
     name,
     division,
@@ -68,6 +32,10 @@ exports.handler = async function (event) {
     squadImage
   } = body;
 
+  if (!validDraftCredentials(draftId, draftSecret)) {
+    return json(400, { error: "Nieprawidłowy identyfikator ankiety." });
+  }
+
   const parsedBudget = Number(budget);
   const hasRequiredData =
     typeof email === "string" && email.trim() &&
@@ -80,81 +48,96 @@ exports.handler = async function (event) {
     Array.isArray(rebuildGoals) && rebuildGoals.length > 0 &&
     typeof tradablePlayers === "string" && tradablePlayers.trim();
 
-  if (!hasRequiredData) {
-    return json(400, { error: "Brakuje wymaganych danych ankiety." });
-  }
+  if (!hasRequiredData) return json(400, { error: "Brakuje wymaganych danych ankiety." });
 
-  const parsedImage = parseImageDataUrl(squadImage?.dataUrl);
-  if (!parsedImage) {
-    return json(400, { error: "Nie udało się odczytać zdjęcia składu." });
-  }
+  try {
+    const supabase = getSupabase();
+    const { row, authorized } = await getAuthorizedDraft(supabase, draftId, draftSecret);
+    if (!authorized) return json(403, { error: "Brak dostępu do tej ankiety." });
+    if (row?.status === "submitted") return json(409, { error: "Ta ankieta została już wysłana." });
 
-  const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
-  if (parsedImage.buffer.length > MAX_IMAGE_BYTES) {
-    return json(400, { error: "Zdjęcie składu jest za duże po przygotowaniu do wysyłki." });
-  }
+    let imagePath = row?.squad_image_url || null;
+    let newImagePath = null;
 
-  const supabase = createClient(supabaseUrl, supabaseSecretKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false
+    if (squadImage?.dataUrl) {
+      const parsedImage = parseImageDataUrl(squadImage.dataUrl);
+      if (!parsedImage) return json(400, { error: "Nie udało się odczytać zdjęcia składu." });
+      if (parsedImage.buffer.length > 6 * 1024 * 1024) return json(400, { error: "Zdjęcie składu jest za duże." });
+
+      newImagePath = `${draftId}/squad-final-${Date.now()}.${parsedImage.extension}`;
+      const { error: uploadError } = await supabase.storage
+        .from("squad-images")
+        .upload(newImagePath, parsedImage.buffer, {
+          contentType: parsedImage.contentType,
+          cacheControl: "3600",
+          upsert: false
+        });
+      if (uploadError) {
+        console.error("Supabase Storage error:", uploadError);
+        return json(500, { error: "Nie udało się wysłać zdjęcia składu." });
+      }
+      imagePath = newImagePath;
     }
-  });
 
-  const analysisId = crypto.randomUUID();
-  const imagePath = `${analysisId}/squad-${Date.now()}.${parsedImage.extension}`;
+    if (!imagePath) return json(400, { error: "Dodaj zdjęcie składu przed wysłaniem." });
 
-  const { error: uploadError } = await supabase.storage
-    .from("squad-images")
-    .upload(imagePath, parsedImage.buffer, {
-      contentType: parsedImage.contentType,
-      cacheControl: "3600",
-      upsert: false
-    });
-
-  if (uploadError) {
-    console.error("Supabase Storage error:", uploadError);
-    return json(500, { error: "Nie udało się wysłać zdjęcia składu." });
-  }
-
-  const { data, error } = await supabase
-    .from("analyses")
-    .insert({
-      id: analysisId,
-      email: email.trim(),
-      name: name.trim(),
-      division: division.trim(),
-      budget: parsedBudget,
-      play_style: playStyle,
-      playstyles: Array.isArray(favoritePlaystyles) ? favoritePlaystyles : [],
-      other_playstyle: otherPlaystyle?.trim() || null,
+    const fields = {
+      ...normalizeDraftFields({
+        email,
+        name,
+        division,
+        budget,
+        playStyle,
+        favoritePlaystyles,
+        otherPlaystyle,
+        rebuildGoals,
+        tradablePlayers,
+        mustKeepPlayers,
+        feedback
+      }),
       squad_image_url: imagePath,
-      rebuild_priorities: rebuildGoals,
-      tradeable_players: tradablePlayers.trim(),
-      must_keep_players: mustKeepPlayers?.trim() || null,
-      feedback: feedback?.trim() || null,
       status: "submitted"
-    })
-    .select("id, squad_image_url")
-    .single();
+    };
 
-  if (error) {
-    console.error("Supabase database error:", error);
-
-    const { error: cleanupError } = await supabase.storage
-      .from("squad-images")
-      .remove([imagePath]);
-
-    if (cleanupError) {
-      console.error("Nie udało się posprzątać osieroconego zdjęcia:", cleanupError);
+    let result;
+    if (row) {
+      result = await supabase
+        .from("analyses")
+        .update(fields)
+        .eq("id", draftId)
+        .eq("status", "draft")
+        .select("id, squad_image_url, status")
+        .single();
+    } else {
+      result = await supabase
+        .from("analyses")
+        .insert({
+          id: draftId,
+          ...fields,
+          draft_key_hash: hashSecret(draftSecret)
+        })
+        .select("id, squad_image_url, status")
+        .single();
     }
 
-    return json(500, { error: "Nie udało się zapisać analizy w bazie." });
-  }
+    if (result.error) {
+      console.error("Supabase database error:", result.error);
+      if (newImagePath) await supabase.storage.from("squad-images").remove([newImagePath]);
+      return json(500, { error: "Nie udało się zapisać analizy w bazie." });
+    }
 
-  return json(200, {
-    success: true,
-    analysisId: data.id,
-    squadImagePath: data.squad_image_url
-  });
+    if (newImagePath && row?.squad_image_url && row.squad_image_url !== newImagePath) {
+      await supabase.storage.from("squad-images").remove([row.squad_image_url]);
+    }
+
+    return json(200, {
+      success: true,
+      analysisId: result.data.id,
+      squadImagePath: result.data.squad_image_url,
+      status: result.data.status
+    });
+  } catch (error) {
+    console.error("save-analysis error:", error);
+    return json(500, { error: "Nie udało się zapisać analizy." });
+  }
 };
