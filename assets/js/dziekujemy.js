@@ -1,8 +1,15 @@
+const IS_LOCAL_PREVIEW = window.location.protocol === "file:";
 const sessionId = new URLSearchParams(window.location.search).get("session_id");
 
     async function checkSession() {
       const message = document.getElementById("message");
       const status = document.getElementById("status");
+
+      if (IS_LOCAL_PREVIEW) {
+        message.textContent = "Podgląd lokalny strony po zakupie.";
+        status.textContent = "Na Netlify w tym miejscu pojawi się prawdziwy status płatności klienta.";
+        return;
+      }
 
       if (!sessionId) {
         message.textContent = "Nie znaleziono identyfikatora płatności.";

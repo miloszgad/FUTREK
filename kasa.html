@@ -5,227 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kasa — FUTrek</title>
   <meta name="description" content="Koszyk i kasa FUTrek." />
-  <style>
-    :root{
-      --bg:#050806;
-      --card:#0d1410;
-      --card2:#111d16;
-      --text:#f4fff8;
-      --muted:#a9b9ad;
-      --green:#00ff7a;
-      --green2:#7cffb0;
-      --line:rgba(124,255,176,.16);
-      --shadow:0 28px 80px rgba(0,0,0,.62);
-    }
-
-    *{box-sizing:border-box}
-
-    body{
-      margin:0;
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:
-        radial-gradient(circle at 20% 0%,rgba(0,255,122,.20),transparent 34%),
-        radial-gradient(circle at 85% 5%,rgba(124,255,176,.12),transparent 30%),
-        var(--bg);
-      color:var(--text);
-      min-height:100vh;
-    }
-
-    a{text-decoration:none;color:inherit}
-
-    .wrap{width:min(1100px,92%);margin:0 auto}
-
-    header{
-      border-bottom:1px solid var(--line);
-      background:rgba(5,8,6,.84);
-      backdrop-filter:blur(14px);
-      position:sticky;
-      top:0;
-      z-index:20;
-    }
-
-    .nav{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:20px;
-      padding:14px 0;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-size:20px;
-      font-weight:1000;
-    }
-
-    .brand img{
-      width:44px;
-      height:44px;
-      border-radius:50%;
-      object-fit:cover;
-    }
-
-    .back{color:var(--green2);font-weight:900}
-
-    main{padding:46px 0 70px}
-
-    .headline{margin-bottom:26px}
-
-    .eyebrow{
-      display:inline-flex;
-      align-items:center;
-      padding:9px 13px;
-      border:1px solid rgba(0,255,122,.35);
-      background:rgba(0,255,122,.09);
-      color:var(--green2);
-      border-radius:999px;
-      font-size:13px;
-      font-weight:900;
-    }
-
-    h1{
-      font-size:clamp(34px,5vw,58px);
-      margin:14px 0 10px;
-      line-height:1;
-      letter-spacing:-1.5px;
-    }
-
-    .headline p{color:var(--muted);font-size:17px;line-height:1.5;max-width:700px}
-
-    .layout{
-      display:grid;
-      grid-template-columns:1.25fr .75fr;
-      gap:22px;
-      align-items:start;
-    }
-
-    .panel{
-      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.035));
-      border:1px solid var(--line);
-      border-radius:26px;
-      padding:22px;
-      box-shadow:var(--shadow);
-    }
-
-    .panel h2{margin:0 0 18px;font-size:25px}
-
-    .cart-list{display:grid;gap:14px}
-
-    .cart-item{
-      display:grid;
-      grid-template-columns:1fr auto;
-      gap:16px;
-      align-items:center;
-      padding:16px;
-      border-radius:18px;
-      background:rgba(255,255,255,.045);
-      border:1px solid var(--line);
-    }
-.cart-item h3{margin:0 0 6px;font-size:18px}
-    .cart-item p{margin:0;color:var(--muted)}
-
-    .controls{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      margin-top:12px;
-      flex-wrap:wrap;
-    }
-
-    button{font:inherit}
-
-    .qty,.remove{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.07);
-      color:white;
-      border-radius:10px;
-      cursor:pointer;
-    }
-
-    .qty{width:34px;height:34px;font-weight:1000}
-    .remove{padding:8px 10px;color:#ffb4b4}
-
-    .item-price{
-      font-size:18px;
-      font-weight:1000;
-      white-space:nowrap;
-    }
-
-    .summary-row{
-      display:flex;
-      justify-content:space-between;
-      gap:16px;
-      padding:11px 0;
-      color:var(--muted);
-    }
-
-    .summary-row.total{
-      margin-top:8px;
-      padding-top:18px;
-      border-top:1px solid var(--line);
-      font-size:22px;
-      color:white;
-      font-weight:1000;
-    }
-
-    .checkout-btn,.continue-btn{
-      width:100%;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      border-radius:16px;
-      padding:16px 18px;
-      font-weight:950;
-      cursor:pointer;
-    }
-
-    .checkout-btn{
-      margin-top:18px;
-      border:0;
-      background:linear-gradient(135deg,var(--green),#b8ffd4);
-      color:#031007;
-      box-shadow:0 16px 38px rgba(0,255,122,.22);
-    }
-
-    .checkout-btn:disabled{
-      opacity:.45;
-      cursor:not-allowed;
-      box-shadow:none;
-    }
-
-    .continue-btn{
-      margin-top:10px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.06);
-      color:white;
-    }
-.empty{
-      padding:30px 18px;
-      text-align:center;
-      border:1px dashed rgba(124,255,176,.25);
-      border-radius:18px;
-      color:var(--muted);
-    }
-
-    .empty strong{display:block;color:white;font-size:20px;margin-bottom:8px}
-@media(max-width:820px){
-      .layout{grid-template-columns:1fr}
-      .nav{align-items:flex-start}
-      .cart-item{grid-template-columns:1fr}
-      .item-price{justify-self:start}
-    }
-  </style>
+  <link rel="stylesheet" href="assets/css/kasa.css">
+  <script src="https://js.stripe.com/v3/"></script>
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="icon" href="assets/images/logo.jpeg">
 </head>
 <body>
+
+  <div class="tiktok-blocker" id="tiktok-blocker" hidden>
+    <section class="tiktok-blocker__card">
+      <div class="tiktok-blocker__icon">↗</div>
+      <h1>Otwórz kasę w Safari lub Chrome</h1>
+      <p>TikTok nie obsługuje bezpiecznej płatności na tej stronie.</p>
+      <ol>
+        <li>Kliknij <strong>•••</strong> u góry ekranu.</li>
+        <li>Wybierz <strong>Otwórz w przeglądarce</strong>.</li>
+        <li>Jeśli tej opcji nie widzisz, skopiuj link i wklej go do Safari.</li>
+      </ol>
+      <button id="copy-current-checkout" type="button">Skopiuj link do kasy</button>
+      <p id="copy-current-status" class="tiktok-blocker__status"></p>
+    </section>
+  </div>
+
   <header>
     <div class="wrap nav">
-      <a class="brand" href="futrek-z-koszykiem.html">
-        <img src="logo.jpeg" alt="Logo FUTrek">
+      <a class="brand" href="index.html">
+        <img src="assets/images/logo.jpeg" alt="Logo FUTrek">
         <span>FUTrek</span>
       </a>
-      <a class="back" href="futrek-z-koszykiem.html">← Wróć do ofert</a>
+      <a class="back" href="index.html">← Wróć do ofert</a>
     </div>
   </header>
 
@@ -255,130 +63,15 @@
           </div>
 
           <button id="checkout-button" class="checkout-btn" disabled>Przejdź do płatności</button>
-          <a href="futrek-z-koszykiem.html#oferty" class="continue-btn">Dodaj kolejne produkty</a>
+          <div id="payment-error" class="payment-error" role="alert"></div>
+          <div id="embedded-checkout" class="embedded-checkout"></div>
+          <a href="index.html#oferty" class="continue-btn">Dodaj kolejne produkty</a>
 </aside>
       </div>
     </div>
   </main>
 
-  <script>
-    const CART_KEY = "futrek_cart";
-    const RELEASE_AT = new Date("2026-09-25T00:00:00+02:00");
-    const RELEASE_PRODUCTS = {
-      "build-your-team": 29.99,
-      "full-game-control": 99.99,
-      "area-control": 39.99,
-      "goal-machine": 39.99,
-      "wild-mentality": 39.99
-    };
-
-    function normalizeReleaseCart() {
-      let cart = getCart();
-      if (Date.now() >= RELEASE_AT.getTime()) {
-        cart = cart.map(item => RELEASE_PRODUCTS[item.id] != null ? {...item, price: RELEASE_PRODUCTS[item.id]} : item);
-      } else {
-        cart = cart.filter(item => RELEASE_PRODUCTS[item.id] == null);
-      }
-      localStorage.setItem(CART_KEY, JSON.stringify(cart));
-    }
-
-
-    function getCart() {
-      try {
-        return JSON.parse(localStorage.getItem(CART_KEY)) || [];
-      } catch {
-        return [];
-      }
-    }
-
-    function saveCart(cart) {
-      localStorage.setItem(CART_KEY, JSON.stringify(cart));
-      renderCart();
-    }
-
-    function formatPrice(value) {
-      return value.toLocaleString("pl-PL", {
-        style: "currency",
-        currency: "PLN"
-      });
-    }
-
-    function changeQuantity(id, change) {
-      const cart = getCart();
-      const item = cart.find(product => product.id === id);
-
-      if (!item) return;
-
-      item.quantity += change;
-
-      const updatedCart = cart.filter(product => product.quantity > 0);
-      saveCart(updatedCart);
-    }
-
-    function removeItem(id) {
-      const updatedCart = getCart().filter(product => product.id !== id);
-      saveCart(updatedCart);
-    }
-
-    function renderCart() {
-      const cart = getCart();
-      const list = document.getElementById("cart-list");
-      const checkoutButton = document.getElementById("checkout-button");
-
-      if (cart.length === 0) {
-        list.innerHTML = `
-          <div class="empty">
-            <strong>Twój koszyk jest pusty</strong>
-            Wróć do ofert i dodaj interesujące Cię produkty.
-          </div>
-        `;
-      } else {
-        list.innerHTML = cart.map(item => {
-          const itemTotal = item.price * item.quantity;
-
-          return `
-            <article class="cart-item">
-              <div>
-                <h3>${item.name}</h3>
-                <p>${formatPrice(item.price)} za sztukę</p>
-                <div class="controls">
-                  <button class="qty" type="button" data-action="decrease" data-id="${item.id}" aria-label="Zmniejsz ilość">−</button>
-                  <strong>${item.quantity}</strong>
-                  <button class="qty" type="button" data-action="increase" data-id="${item.id}" aria-label="Zwiększ ilość">+</button>
-                  <button class="remove" type="button" data-action="remove" data-id="${item.id}">Usuń</button>
-                </div>
-              </div>
-              <div class="item-price">${formatPrice(itemTotal)}</div>
-            </article>
-          `;
-        }).join("");
-      }
-
-      const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-      const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-      document.getElementById("summary-count").textContent = count;
-      document.getElementById("summary-total").textContent = formatPrice(total);
-      checkoutButton.disabled = cart.length === 0;
-
-      document.querySelectorAll("[data-action]").forEach(button => {
-        button.addEventListener("click", () => {
-          const id = button.dataset.id;
-          const action = button.dataset.action;
-
-          if (action === "increase") changeQuantity(id, 1);
-          if (action === "decrease") changeQuantity(id, -1);
-          if (action === "remove") removeItem(id);
-        });
-      });
-    }
-
-    document.getElementById("checkout-button").addEventListener("click", () => {
-      alert("Płatność zostanie uruchomiona w kolejnym kroku.");
-    });
-
-    normalizeReleaseCart();
-    renderCart();
-  </script>
+  
+  <script src="assets/js/kasa.js"></script>
 </body>
 </html>

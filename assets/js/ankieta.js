@@ -241,6 +241,12 @@
     const payload = getDraftData();
     delete payload.savedAt;
 
+    if (IS_LOCAL_PREVIEW) {
+      saveDraft();
+      submitStatus.textContent = "Podgląd lokalny: ankieta jest poprawnie wypełniona. Odpowiedzi nie zostały wysłane — zapis do Supabase działa po uruchomieniu przez Netlify.";
+      return;
+    }
+
     submitButton.disabled = true;
     submitStatus.textContent = "Wysyłamy odpowiedzi…";
 

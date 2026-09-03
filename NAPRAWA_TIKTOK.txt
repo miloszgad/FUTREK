@@ -1,4 +1,0 @@
-Naprawiono:
-- index.js ładuje się dopiero po utworzeniu okna TikTok w HTML,
-- rozszerzono wykrywanie przeglądarki TikToka,
-- dodano zabezpieczenia przed błędem JavaScript przy brakującym elemencie.

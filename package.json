@@ -2,13 +2,14 @@
   "name": "futrek-store",
   "version": "1.0.0",
   "private": true,
-  "description": "Sklep FUTrek z koszykiem i Stripe Embedded Checkout na Netlify",
+  "description": "Sklep FUTrek z koszykiem, Stripe i Supabase na Netlify",
   "scripts": {
     "dev": "netlify dev",
     "build": "echo \"Static build\""
   },
   "dependencies": {
-    "stripe": "^18.5.0"
+    "stripe": "^18.5.0",
+    "@supabase/supabase-js": "^2.57.0"
   },
   "devDependencies": {
     "netlify-cli": "^23.0.0"

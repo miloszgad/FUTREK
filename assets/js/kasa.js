@@ -1,4 +1,6 @@
 
+const IS_LOCAL_PREVIEW = window.location.protocol === "file:";
+
 function isTikTokBrowser() {
   const ua = navigator.userAgent || "";
   return /TikTok|musical_ly|BytedanceWebview|ByteLocale/i.test(ua);
@@ -72,12 +74,17 @@ copyCurrentCheckout.addEventListener("click", async () => {
 
 
 const CART_KEY = "futrek_cart";
+const LOCAL_PREVIEW_CART = [
+  { id: "build-your-team", name: "BUILD YOUR TEAM — Analiza składu", price: 29.99, quantity: 1 }
+];
 
     function getCart() {
       try {
-        return JSON.parse(localStorage.getItem(CART_KEY)) || [];
+        const cart = JSON.parse(localStorage.getItem(CART_KEY)) || [];
+        if (IS_LOCAL_PREVIEW && cart.length === 0) return LOCAL_PREVIEW_CART.map(item => ({ ...item }));
+        return cart;
       } catch {
-        return [];
+        return IS_LOCAL_PREVIEW ? LOCAL_PREVIEW_CART.map(item => ({ ...item })) : [];
       }
     }
 
@@ -163,7 +170,11 @@ const CART_KEY = "futrek_cart";
       });
     }
 
-    const stripe = Stripe("pk_live_51SURRXHduHJ2QTTSlimtyJvtOBVpMcVTU1DBPmhyOSciY6foTbMKGMBcQllfMh5jRE3HJY71YMg878n4k9rCZPwf00WKssvdeK");
+    // Stripe uruchamiamy tylko na stronie serwowanej przez http/https.
+    // Dzięki temu lokalny podgląd wyglądu działa także bez ładowania Stripe.
+    const stripe = !IS_LOCAL_PREVIEW && typeof Stripe !== "undefined"
+      ? Stripe("pk_live_51SURRXHduHJ2QTTSlimtyJvtOBVpMcVTU1DBPmhyOSciY6foTbMKGMBcQllfMh5jRE3HJY71YMg878n4k9rCZPwf00WKssvdeK")
+      : null;
     let embeddedCheckout = null;
 
     function showPaymentError(message) {
@@ -184,8 +195,8 @@ const CART_KEY = "futrek_cart";
 
       if (!cart.length) return;
 
-      if (window.location.protocol === "file:") {
-        showPaymentError("Płatność Stripe nie działa po otwarciu pliku z dysku. Wdróż cały folder na Netlify i otwórz stronę przez adres https://.");
+      if (IS_LOCAL_PREVIEW) {
+        showPaymentError("Tryb podglądu lokalnego: wygląd kasy możesz sprawdzać z dysku, ale prawdziwa płatność Stripe działa dopiero przez Netlify / https://.");
         return;
       }
 
