@@ -10,3 +10,5 @@
     .analysis-access{display:flex;width:100%;justify-content:center;margin-top:18px;font-size:18px}
     .analysis-access[hidden]{display:none}
     .back-link{background:transparent;color:#d9ffe8;border:1px solid var(--line);margin-left:8px}
+    .analysis-access-list{display:grid;gap:10px;margin-top:18px}
+    .analysis-access-list .analysis-access{margin-top:0}

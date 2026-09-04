@@ -15,26 +15,32 @@ function json(statusCode, body, extraHeaders = {}) {
   };
 }
 
-async function ensureAnalysisPurchase(session, lineItems) {
+async function ensureAnalysisPurchases(session, lineItems) {
   const analysisItem = lineItems.data.find(item => item.price?.id === ANALYSIS_PRICE_ID);
-  if (!analysisItem) return null;
+  const quantity = Math.max(0, Number(analysisItem?.quantity) || 0);
+  if (!quantity) return [];
 
   const supabase = getSupabase();
   const email = session.customer_details?.email || null;
 
-  let { data: purchase, error } = await supabase
+  const { data: existing, error: selectError } = await supabase
     .from('analysis_purchases')
     .select('*')
     .eq('stripe_session_id', session.id)
-    .maybeSingle();
+    .order('unit_index', { ascending: true });
 
-  if (error) throw error;
+  if (selectError) throw selectError;
 
-  if (!purchase) {
+  const byIndex = new Map((existing || []).map(row => [Number(row.unit_index) || 1, row]));
+
+  for (let unitIndex = 1; unitIndex <= quantity; unitIndex += 1) {
+    if (byIndex.has(unitIndex)) continue;
+
     const inserted = await supabase
       .from('analysis_purchases')
       .insert({
         stripe_session_id: session.id,
+        unit_index: unitIndex,
         customer_email: email,
         status: 'active'
       })
@@ -42,25 +48,34 @@ async function ensureAnalysisPurchase(session, lineItems) {
       .single();
 
     if (inserted.error) throw inserted.error;
-    purchase = inserted.data;
-  } else if (!purchase.customer_email && email) {
-    const updated = await supabase
-      .from('analysis_purchases')
-      .update({ customer_email: email })
-      .eq('id', purchase.id)
-      .select('*')
-      .single();
-    if (updated.error) throw updated.error;
-    purchase = updated.data;
+    byIndex.set(unitIndex, inserted.data);
   }
 
-  const token = makeAccessToken(purchase.id, purchase.stripe_session_id);
-  return {
+  const purchases = Array.from(byIndex.values())
+    .filter(row => (Number(row.unit_index) || 1) <= quantity)
+    .sort((a, b) => (Number(a.unit_index) || 1) - (Number(b.unit_index) || 1));
+
+  if (email) {
+    for (const purchase of purchases) {
+      if (purchase.customer_email) continue;
+      const updated = await supabase
+        .from('analysis_purchases')
+        .update({ customer_email: email })
+        .eq('id', purchase.id)
+        .select('*')
+        .single();
+      if (updated.error) throw updated.error;
+      Object.assign(purchase, updated.data);
+    }
+  }
+
+  return purchases.map(purchase => ({
     purchaseId: purchase.id,
-    accessToken: token,
+    accessToken: makeAccessToken(purchase.id, purchase.stripe_session_id),
     status: purchase.status,
-    analysisId: purchase.analysis_id
-  };
+    analysisId: purchase.analysis_id,
+    unitIndex: Number(purchase.unit_index) || 1
+  }));
 }
 
 exports.handler = async (event) => {
@@ -83,17 +98,18 @@ exports.handler = async (event) => {
     const stripe = new Stripe(stripeSecretKey);
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    let analysisAccess = null;
+    let analysisAccesses = [];
     if (session.payment_status === 'paid') {
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 });
-      analysisAccess = await ensureAnalysisPurchase(session, lineItems);
+      analysisAccesses = await ensureAnalysisPurchases(session, lineItems);
     }
 
     return json(200, {
       status: session.status,
       paymentStatus: session.payment_status,
       customerEmail: session.customer_details?.email || null,
-      analysisAccess
+      analysisAccess: analysisAccesses[0] || null,
+      analysisAccesses
     });
   } catch (error) {
     console.error('session-status:', error);

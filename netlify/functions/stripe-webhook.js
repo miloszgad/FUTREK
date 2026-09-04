@@ -2,21 +2,25 @@ const Stripe = require('stripe');
 const { getSupabase } = require('./_shared/analysis');
 const { ANALYSIS_PRICE_ID } = require('./_shared/products');
 
-async function ensureAnalysisPurchase(session, lineItems) {
+async function ensureAnalysisPurchases(session, lineItems) {
   const analysisItem = lineItems.data.find(item => item.price?.id === ANALYSIS_PRICE_ID);
-  if (!analysisItem) return;
+  const quantity = Math.max(0, Number(analysisItem?.quantity) || 0);
+  if (!quantity) return;
 
   const supabase = getSupabase();
   const email = session.customer_details?.email || null;
 
+  const rows = Array.from({ length: quantity }, (_, index) => ({
+    stripe_session_id: session.id,
+    unit_index: index + 1,
+    customer_email: email,
+    status: 'active'
+  }));
+
   const { error } = await supabase
     .from('analysis_purchases')
-    .upsert({
-      stripe_session_id: session.id,
-      customer_email: email,
-      status: 'active'
-    }, {
-      onConflict: 'stripe_session_id',
+    .upsert(rows, {
+      onConflict: 'stripe_session_id,unit_index',
       ignoreDuplicates: true
     });
 
@@ -53,7 +57,7 @@ exports.handler = async (event) => {
     if (session.payment_status === 'paid') {
       try {
         const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 });
-        await ensureAnalysisPurchase(session, lineItems);
+        await ensureAnalysisPurchases(session, lineItems);
 
         console.log('Opłacone zamówienie FUTrek', {
           sessionId: session.id,

@@ -102,11 +102,6 @@ const CART_KEY = "futrek_cart";
 
       if (!item) return;
 
-      if (id === "build-your-team" && change > 0 && item.quantity >= 1) {
-        showPaymentError("Jednorazowo możesz kupić jedną analizę BUILD YOUR TEAM.");
-        return;
-      }
-
       item.quantity += change;
 
       const updatedCart = cart.filter(product => product.quantity > 0);

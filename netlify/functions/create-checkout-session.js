@@ -43,10 +43,6 @@ exports.handler = async (event) => {
       if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10) {
         throw new Error("Nieprawidłowa liczba produktów.");
       }
-      if (item.id === ANALYSIS_PRODUCT_ID && quantity !== 1) {
-        throw new Error("Jednorazowo możesz kupić jedną analizę BUILD YOUR TEAM.");
-      }
-
       return { price, quantity };
     });
 

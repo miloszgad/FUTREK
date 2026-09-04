@@ -31,22 +31,50 @@ async function checkSession() {
       localStorage.removeItem('futrek_cart');
       message.textContent = 'Płatność została przyjęta.';
 
-      if (data.analysisAccess) {
-        const access = {
-          purchaseId: data.analysisAccess.purchaseId,
-          accessToken: data.analysisAccess.accessToken
-        };
-        localStorage.setItem(ANALYSIS_ACCESS_KEY, JSON.stringify(access));
+      const analysisAccesses = Array.isArray(data.analysisAccesses)
+        ? data.analysisAccesses
+        : (data.analysisAccess ? [data.analysisAccess] : []);
 
-        const target = new URL('ankieta.html', window.location.href);
-        target.searchParams.set('purchase_id', access.purchaseId);
-        target.searchParams.set('access_token', access.accessToken);
-        analysisLink.href = target.toString();
-        analysisLink.hidden = false;
+      if (analysisAccesses.length) {
+        const accessList = document.getElementById('analysis-access-list');
+        accessList.innerHTML = '';
 
-        status.textContent = data.analysisAccess.status === 'submitted'
-          ? 'Ta analiza została już wcześniej wysłana. Możesz otworzyć ankietę, aby zobaczyć status.'
-          : 'Kupiona analiza jest gotowa. Kliknij poniżej, aby przejść do ankiety.';
+        analysisAccesses.forEach((item, index) => {
+          const access = {
+            purchaseId: item.purchaseId,
+            accessToken: item.accessToken
+          };
+
+          const target = new URL('ankieta.html', window.location.href);
+          target.searchParams.set('purchase_id', access.purchaseId);
+          target.searchParams.set('access_token', access.accessToken);
+
+          const link = document.createElement('a');
+          link.className = 'analysis-access';
+          link.href = target.toString();
+          link.textContent = analysisAccesses.length === 1
+            ? 'Przejdź do ankiety analizy'
+            : `Przejdź do analizy ${index + 1}`;
+          link.addEventListener('click', () => {
+            localStorage.setItem(ANALYSIS_ACCESS_KEY, JSON.stringify(access));
+          });
+          accessList.appendChild(link);
+        });
+
+        if (analysisAccesses.length === 1) {
+          const access = {
+            purchaseId: analysisAccesses[0].purchaseId,
+            accessToken: analysisAccesses[0].accessToken
+          };
+          localStorage.setItem(ANALYSIS_ACCESS_KEY, JSON.stringify(access));
+        }
+
+        analysisLink.hidden = true;
+        status.textContent = analysisAccesses.length === 1
+          ? (analysisAccesses[0].status === 'submitted'
+              ? 'Ta analiza została już wcześniej wysłana. Możesz otworzyć ankietę, aby zobaczyć status.'
+              : 'Kupiona analiza jest gotowa. Kliknij poniżej, aby przejść do ankiety.')
+          : `Kupiono ${analysisAccesses.length} analizy. Każdy przycisk prowadzi do osobnej ankiety.`;
       } else {
         status.textContent = data.customerEmail
           ? 'Potwierdzenie zostanie wysłane na: ' + data.customerEmail
