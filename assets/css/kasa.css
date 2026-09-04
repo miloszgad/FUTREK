@@ -227,11 +227,13 @@
     .payment-error.show{display:block}
     .embedded-checkout{
       width:100%;
-      min-height:720px;
-      margin-top:20px;
+      min-height:0;
+      margin-top:0;
       overflow:visible;
       border-radius:18px;
     }
+
+    .embedded-checkout:empty{display:none}
     .checkout-btn.loading{opacity:.65;cursor:wait}
 
     @media(max-width:820px){
@@ -261,7 +263,9 @@
     }
 
     .layout.payment-active #embedded-checkout{
+      display:block;
       min-height:720px;
+      margin-top:20px;
     }
 
     @media(max-width:820px){
