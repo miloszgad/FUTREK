@@ -3,7 +3,7 @@
 
   const FORM_ID = "analysis-form";
   const DRAFT_KEY = "futrek_analysis_draft_v1";
-  const ACCESS_KEY = "futrek_analysis_access_v1";
+  const PURCHASE_ACCESS_KEY = "futrek_analysis_purchase_access_v1";
   const REQUIRED_QUESTIONS = [
     "email",
     "name",
@@ -38,27 +38,34 @@
   let remoteSaveQueued = false;
   let currentImagePath = null;
 
-  function createRandomSecret() {
-    const bytes = new Uint8Array(32);
-    crypto.getRandomValues(bytes);
-    return [...bytes].map(byte => byte.toString(16).padStart(2, "0")).join("");
-  }
+  function getPurchaseAccess() {
+    if (IS_LOCAL_PREVIEW) return { purchaseId: "local-preview", accessToken: "local-preview" };
 
-  function getAccess() {
+    const params = new URLSearchParams(window.location.search);
+    const purchaseId = params.get("purchase_id");
+    const accessToken = params.get("access_token");
+
+    if (purchaseId && accessToken) {
+      const access = { purchaseId, accessToken };
+      localStorage.setItem(PURCHASE_ACCESS_KEY, JSON.stringify(access));
+
+      // Usuwamy token z paska adresu po zapisaniu go lokalnie.
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.searchParams.delete("purchase_id");
+      cleanUrl.searchParams.delete("access_token");
+      window.history.replaceState({}, "", cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+      return access;
+    }
+
     try {
-      const stored = JSON.parse(localStorage.getItem(ACCESS_KEY) || "null");
-      if (stored?.id && stored?.secret) return stored;
+      const stored = JSON.parse(localStorage.getItem(PURCHASE_ACCESS_KEY) || "null");
+      if (stored?.purchaseId && stored?.accessToken) return stored;
     } catch {}
 
-    const access = {
-      id: crypto.randomUUID(),
-      secret: createRandomSecret()
-    };
-    localStorage.setItem(ACCESS_KEY, JSON.stringify(access));
-    return access;
+    return null;
   }
 
-  const access = getAccess();
+  const access = getPurchaseAccess();
 
   function checkedValues(name) {
     return [...form.querySelectorAll(`input[name="${name}"]:checked`)].map(input => input.value);
@@ -175,6 +182,10 @@
 
   async function saveRemoteDraft() {
     if (IS_LOCAL_PREVIEW) return;
+    if (!access) {
+      setSaveNote("Brak aktywnego dostępu do ankiety.");
+      return;
+    }
     if (remoteSaveInFlight) {
       remoteSaveQueued = true;
       return;
@@ -192,8 +203,8 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          draftId: access.id,
-          draftSecret: access.secret,
+          purchaseId: access.purchaseId,
+          accessToken: access.accessToken,
           ...payload
         })
       });
@@ -260,12 +271,17 @@
       return;
     }
 
+    if (!access) {
+      lockNoAccessForm();
+      return;
+    }
+
     setSaveNote("Sprawdzamy zapisany postęp…");
     try {
       const response = await fetch("/.netlify/functions/load-draft", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ draftId: access.id, draftSecret: access.secret })
+        body: JSON.stringify({ purchaseId: access.purchaseId, accessToken: access.accessToken })
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "Nie udało się pobrać postępu.");
@@ -273,7 +289,7 @@
         setSaveNote("Postęp będzie zapisywany automatycznie w chmurze.");
         return;
       }
-      if (result.status === "submitted") {
+      if (result.status === "submitted" || result.purchaseStatus === "submitted") {
         lockSubmittedForm();
         return;
       }
@@ -348,6 +364,10 @@
 
   async function saveDraftImage(file) {
     if (IS_LOCAL_PREVIEW || !file) return;
+    if (!access) {
+      setSaveNote("Brak aktywnego dostępu do ankiety.");
+      return;
+    }
     setSaveNote("Zapisywanie zdjęcia składu…");
     try {
       const preparedImage = await prepareSquadImage(file);
@@ -355,8 +375,8 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          draftId: access.id,
-          draftSecret: access.secret,
+          purchaseId: access.purchaseId,
+          accessToken: access.accessToken,
           squadImage: preparedImage
         })
       });
@@ -404,6 +424,12 @@
     });
   }
 
+  function lockNoAccessForm() {
+    form.querySelectorAll("input, select, textarea, button").forEach(element => { element.disabled = true; });
+    submitStatus.textContent = "Ta ankieta jest dostępna dopiero po opłaceniu analizy BUILD YOUR TEAM.";
+    setSaveNote("Brak aktywnego dostępu. Wróć do Futrek.pl i kup analizę.");
+  }
+
   function lockSubmittedForm() {
     form.querySelectorAll("input, select, textarea, button").forEach(element => { element.disabled = true; });
     submitStatus.textContent = "Ta ankieta została już wysłana i nie można jej ponownie edytować.";
@@ -435,6 +461,11 @@
       return;
     }
 
+    if (!access) {
+      lockNoAccessForm();
+      return;
+    }
+
     submitButton.disabled = true;
     submitStatus.textContent = "Finalizujemy ankietę…";
 
@@ -445,8 +476,8 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          draftId: access.id,
-          draftSecret: access.secret,
+          purchaseId: access.purchaseId,
+          accessToken: access.accessToken,
           ...payload
         })
       });
@@ -455,7 +486,7 @@
       if (!response.ok) throw new Error(result.error || "Nie udało się zapisać analizy.");
 
       localStorage.removeItem(DRAFT_KEY);
-      submitStatus.textContent = `Gotowe! Odpowiedzi zostały zapisane. ID analizy: ${result.analysisId}`;
+      submitStatus.textContent = "Gotowe! Otrzymaliśmy Twoje odpowiedzi. Ankieta została finalnie wysłana.";
       setSaveNote("Ankieta wysłana — edycja została zablokowana.");
       form.querySelectorAll("input, select, textarea, button").forEach(element => { element.disabled = true; });
     } catch (error) {
@@ -477,7 +508,11 @@
     await submitAnalysis();
   });
 
-  restoreLocalDraft();
+  if (IS_LOCAL_PREVIEW || access) {
+    restoreLocalDraft();
+  } else {
+    localStorage.removeItem(DRAFT_KEY);
+  }
   updateGoalLimit();
   handleBrokenPlaystyleImages();
   updateProgress();

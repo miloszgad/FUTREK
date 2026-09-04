@@ -1,12 +1,6 @@
 const Stripe = require("stripe");
 
-const PRICE_BY_PRODUCT = Object.freeze({
-  "wild-mentality": "price_1TkMkQHduHJ2QTTS4ZYujv7J",
-  "area-control": "price_1TkMjFHduHJ2QTTSXXqShAXy",
-  "full-game-control": "price_1TkMgmHduHJ2QTTSVJUF4zDM",
-  "build-your-team": "price_1TkMdtHduHJ2QTTSmBPptM7q",
-  "goal-machine": "price_1TQwhtHduHJ2QTTSJjUAJn0F"
-});
+const { PRICE_BY_PRODUCT, ANALYSIS_PRODUCT_ID } = require('./_shared/products');
 
 function json(statusCode, body, extraHeaders = {}) {
   return {
@@ -48,6 +42,9 @@ exports.handler = async (event) => {
       if (!price) throw new Error("Nieprawidłowy produkt w koszyku.");
       if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10) {
         throw new Error("Nieprawidłowa liczba produktów.");
+      }
+      if (item.id === ANALYSIS_PRODUCT_ID && quantity !== 1) {
+        throw new Error("Jednorazowo możesz kupić jedną analizę BUILD YOUR TEAM.");
       }
 
       return { price, quantity };

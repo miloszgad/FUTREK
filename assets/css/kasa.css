@@ -162,19 +162,30 @@
       font-weight:1000;
     }
 
+    .checkout-actions{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin:18px auto 0;
+      width:min(100%,280px);
+    }
+
     .checkout-btn,.continue-btn{
       width:100%;
+      min-height:54px;
       display:flex;
       justify-content:center;
       align-items:center;
+      margin:0;
       border-radius:16px;
       padding:16px 18px;
       font-weight:950;
+      line-height:1.15;
+      text-align:center;
       cursor:pointer;
     }
 
     .checkout-btn{
-      margin-top:18px;
       border:0;
       background:linear-gradient(135deg,var(--green),#b8ffd4);
       color:#031007;
@@ -188,7 +199,6 @@
     }
 
     .continue-btn{
-      margin-top:10px;
       border:1px solid var(--line);
       background:rgba(255,255,255,.06);
       color:white;

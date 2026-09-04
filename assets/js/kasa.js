@@ -74,17 +74,13 @@ copyCurrentCheckout.addEventListener("click", async () => {
 
 
 const CART_KEY = "futrek_cart";
-const LOCAL_PREVIEW_CART = [
-  { id: "build-your-team", name: "BUILD YOUR TEAM — Analiza składu", price: 29.99, quantity: 1 }
-];
 
     function getCart() {
       try {
-        const cart = JSON.parse(localStorage.getItem(CART_KEY)) || [];
-        if (IS_LOCAL_PREVIEW && cart.length === 0) return LOCAL_PREVIEW_CART.map(item => ({ ...item }));
-        return cart;
+        const cart = JSON.parse(localStorage.getItem(CART_KEY));
+        return Array.isArray(cart) ? cart : [];
       } catch {
-        return IS_LOCAL_PREVIEW ? LOCAL_PREVIEW_CART.map(item => ({ ...item })) : [];
+        return [];
       }
     }
 
@@ -105,6 +101,11 @@ const LOCAL_PREVIEW_CART = [
       const item = cart.find(product => product.id === id);
 
       if (!item) return;
+
+      if (id === "build-your-team" && change > 0 && item.quantity >= 1) {
+        showPaymentError("Jednorazowo możesz kupić jedną analizę BUILD YOUR TEAM.");
+        return;
+      }
 
       item.quantity += change;
 

@@ -7,3 +7,6 @@
     p{color:var(--muted);font-size:17px;line-height:1.55}
     .status{margin:22px 0;padding:14px;border-radius:14px;background:rgba(0,255,122,.08);border:1px solid rgba(0,255,122,.22);color:#d9ffe8}
     a{display:inline-flex;margin-top:8px;padding:14px 18px;border-radius:15px;background:linear-gradient(135deg,var(--green),#b8ffd4);color:#031007;text-decoration:none;font-weight:950}
+    .analysis-access{display:flex;width:100%;justify-content:center;margin-top:18px;font-size:18px}
+    .analysis-access[hidden]{display:none}
+    .back-link{background:transparent;color:#d9ffe8;border:1px solid var(--line);margin-left:8px}
