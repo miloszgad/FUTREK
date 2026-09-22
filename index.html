@@ -33,6 +33,14 @@
     .release-inner{width:min(1120px,92%);margin:0 auto;display:flex;align-items:center;justify-content:center;gap:24px;padding:14px 0;text-align:center;flex-wrap:wrap}.release-copy{font-weight:1000;font-size:clamp(16px,2vw,22px)}.release-copy small{display:block;font-size:11px;letter-spacing:.8px;text-transform:uppercase;opacity:.72}.release-countdown{font-variant-numeric:tabular-nums;font-weight:1000;font-size:clamp(24px,4vw,42px);letter-spacing:1px;line-height:1}.release-countdown span{display:inline-block;min-width:2ch}.product-lock{margin:14px 0 18px;padding:14px;border:1px solid rgba(0,255,122,.28);background:rgba(0,255,122,.08);border-radius:16px;text-align:center}.product-lock strong{display:block;color:var(--gold2);font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px}.product-countdown{font-weight:1000;font-size:22px;font-variant-numeric:tabular-nums;color:white}.product-countdown-note{font-size:11px;color:var(--muted);margin-top:5px}.locked-price{display:none!important}.locked-buy{opacity:.48;cursor:not-allowed!important;transform:none!important}.release-live .product-lock{display:none}.release-live .locked-price{display:flex!important}.release-live .locked-buy{opacity:1;cursor:pointer!important}
     @media(max-width:860px){.release-bar{top:69px}.release-inner{gap:8px;padding:10px 0}.release-copy{width:100%;font-size:14px}.release-countdown{font-size:28px}.product-countdown{font-size:19px}.proofBox{grid-template-columns:1fr;padding:18px}.reviewStack{grid-template-columns:1fr;transform:none}.reviewCard:nth-child(even),.reviewCard:nth-child(3){transform:none}.navlinks{display:none}.heroGrid,.priority,.grid,.how{grid-template-columns:1fr}.logoStage{min-height:360px}.trust{grid-template-columns:repeat(2,1fr)}.final{display:block}.final .btn{margin-top:18px;width:100%}.h1{letter-spacing:-1.4px}.hero{padding-top:34px}.badgeFloat{position:relative;right:auto;bottom:auto;margin-top:-26px}.productBody{padding:16px}.product{border-radius:22px}}
  
+
+/* Spójne wyrównanie przycisków i cen w obu rzędach ofert. */
+.priority > .product, .grid > .product {display:flex;flex-direction:column}
+.productBody{display:flex;flex-direction:column;flex:1;min-width:0}
+.productBody > .product-lock{margin-top:auto}
+.productBody > .price{margin-top:14px}
+.productBody > .course-more{margin-top:13px;min-height:30px;align-self:flex-start}
+
 /* Szczegóły produktów – niezależne okno, bez rozciągania kart i luk na telefonie. */
 .course-more{display:flex;align-items:center;justify-content:flex-start;gap:6px;margin:13px 0 0;padding:7px 0;border:0;background:none;color:var(--gold2);font:inherit;font-size:14px;font-weight:800;cursor:pointer;text-align:left}
 .course-more:hover,.course-more:focus-visible{color:#fff;text-decoration:underline;text-underline-offset:4px}
@@ -48,11 +56,6 @@
 .course-tab{flex:1;min-width:0;padding:10px 6px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#d4f2dc;border-radius:11px;font:inherit;font-size:12px;font-weight:850;cursor:pointer}
 .course-tab[aria-selected="true"]{color:#031007;background:var(--gold);border-color:var(--gold)}
 @media(max-width:600px){.course-dialog{width:calc(100% - 12px);max-height:92dvh;border-radius:16px}.course-dialog-head{padding:14px}.course-dialog-scroll{max-height:calc(92dvh - 65px);padding:14px}.course-tabs{top:-14px}.course-details-list{font-size:14px}}
-/* Liczniki premiery ukryte tymczasowo. Oryginalna struktura #release-countdown,
-   .product-countdown, .release-bar i skrypt odliczania pozostają do ponownego włączenia. */
-.release-bar,.product-countdown{display:none!important}
-.product-lock{padding:12px}
-.product-lock strong{margin:0}
 /* Atrybut hidden ma pierwszeństwo przed regułą display:flex zakładek. */
 .course-tabs[hidden],[data-content][hidden]{display:none!important}
 
@@ -101,7 +104,7 @@
 
     const IS_LOCAL_PREVIEW = window.location.protocol === "file:";
 
-    // Tymczasowy tryb testowania koszyka. Ustaw false, aby przywrócić blokadę do RELEASE_AT.
+    // Tryb testowania wyłączony: odblokowanie następuje automatycznie w RELEASE_AT.
     const TEMPORARY_CART_TEST = true;
     function isReleased() { return TEMPORARY_CART_TEST || Date.now() >= RELEASE_AT.getTime(); }
 

@@ -6,6 +6,7 @@ async function checkSession(attempt = 0) {
   const message = document.getElementById('message');
   const status = document.getElementById('status');
   const analysisLink = document.getElementById('analysis-access-link');
+  const backLink = document.querySelector('.back-link');
 
   if (IS_LOCAL_PREVIEW) {
     message.textContent = 'Podgląd lokalny strony po zakupie.';
@@ -101,6 +102,8 @@ async function checkSession(attempt = 0) {
           ? 'Potwierdzenie zostanie wysłane na: ' + data.customerEmail
           : 'Potwierdzenie otrzymasz na podany adres e-mail.';
       }
+      // Dopiero po potwierdzeniu płatności i przygotowaniu przycisków analizy.
+      backLink.hidden = false;
     } else {
       message.textContent = 'Płatność nie została jeszcze potwierdzona.';
       status.textContent = attempt < 9 ? 'Czekamy na potwierdzenie płatności…' : 'Potwierdzenie się opóźnia. Odśwież stronę za chwilę.';

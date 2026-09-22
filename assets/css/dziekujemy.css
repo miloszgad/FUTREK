@@ -19,3 +19,5 @@
 .analysis-access-warning[hidden]{display:none}
 .analysis-access-warning>strong{display:block;color:#ffe0a0;font-size:17px}
 .analysis-access-warning p{margin:8px 0 0;font-size:14px;color:#f4ead4}
+
+.back-link[hidden]{display:none!important}
