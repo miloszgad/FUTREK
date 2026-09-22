@@ -2,7 +2,7 @@ const IS_LOCAL_PREVIEW = window.location.protocol === 'file:';
 const ANALYSIS_ACCESS_KEY = 'futrek_analysis_purchase_access_v1';
 const sessionId = new URLSearchParams(window.location.search).get('session_id');
 
-async function checkSession() {
+async function checkSession(attempt = 0) {
   const message = document.getElementById('message');
   const status = document.getElementById('status');
   const analysisLink = document.getElementById('analysis-access-link');
@@ -36,8 +36,9 @@ async function checkSession() {
         : (data.analysisAccess ? [data.analysisAccess] : []);
 
       if (analysisAccesses.length) {
+        document.getElementById('analysis-access-warning').hidden = false;
         const accessList = document.getElementById('analysis-access-list');
-        accessList.innerHTML = '';
+        accessList.replaceChildren();
 
         analysisAccesses.forEach((item, index) => {
           const access = {
@@ -59,6 +60,26 @@ async function checkSession() {
             localStorage.setItem(ANALYSIS_ACCESS_KEY, JSON.stringify(access));
           });
           accessList.appendChild(link);
+          const copy = document.createElement('button');
+          copy.type = 'button';
+          copy.className = 'analysis-copy-link';
+          copy.textContent = 'Skopiuj prywatny link do analizy';
+          copy.addEventListener('click', async () => {
+            try { await navigator.clipboard.writeText(target.toString()); copy.textContent = 'Link skopiowany'; }
+            catch {
+              const helper = document.createElement('textarea');
+              helper.value = target.toString();
+              helper.style.position = 'fixed';
+              helper.style.opacity = '0';
+              document.body.appendChild(helper);
+              helper.select();
+              let copied = false;
+              try { copied = document.execCommand('copy'); } catch {}
+              helper.remove();
+              copy.textContent = copied ? 'Link skopiowany' : 'Nie udało się skopiować — nie zamykaj tej karty';
+            }
+          });
+          accessList.appendChild(copy);
         });
 
         if (analysisAccesses.length === 1) {
@@ -82,7 +103,8 @@ async function checkSession() {
       }
     } else {
       message.textContent = 'Płatność nie została jeszcze potwierdzona.';
-      status.textContent = 'Odśwież stronę za chwilę.';
+      status.textContent = attempt < 9 ? 'Czekamy na potwierdzenie płatności…' : 'Potwierdzenie się opóźnia. Odśwież stronę za chwilę.';
+      if (attempt < 9) setTimeout(() => checkSession(attempt + 1), 3000);
     }
   } catch (error) {
     message.textContent = 'Nie udało się sprawdzić statusu płatności.';

@@ -43,6 +43,12 @@ exports.handler = async (event) => {
       if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10) {
         throw new Error("Nieprawidłowa liczba produktów.");
       }
+      if (item.id === ANALYSIS_PRODUCT_ID) {
+        // Cena promocyjna: bezpiecznie ustawiana po stronie serwera, bez zmiany
+        // konfiguracji istniejącej ceny Stripe 29,99 zł.
+        return { price_data: { currency: 'pln', unit_amount: 2499,
+          product_data: { name: '📊 ANALIZA SKŁADU' } }, quantity };
+      }
       return { price, quantity };
     });
 
@@ -54,7 +60,9 @@ exports.handler = async (event) => {
       return_url: `${origin}/dziekujemy.html?session_id={CHECKOUT_SESSION_ID}`,
       customer_creation: "always",
       locale: "pl",
-      metadata: { source: "futrek_cart" }
+      metadata: { source: "futrek_cart", analysis_quantity: String(items
+        .filter(item => item.id === ANALYSIS_PRODUCT_ID)
+        .reduce((sum, item) => sum + Number(item.quantity), 0)) }
     });
 
     return json(200, { clientSecret: session.client_secret });

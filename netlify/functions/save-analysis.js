@@ -42,11 +42,17 @@ exports.handler = async function (event) {
   try {
     const { purchase, authorized, supabase } = await getAuthorizedPurchase(purchaseId, accessToken);
     if (!authorized || !purchase) return json(403, { error: 'Ta ankieta wymaga opłaconej analizy.' });
-    if (purchase.status === 'submitted') return json(409, { error: 'Ta ankieta została już wysłana.' });
+    if (purchase.status === 'submitted') return json(200, { success: true, status: 'submitted' });
     if (purchase.status !== 'active') return json(403, { error: 'Ten dostęp do ankiety nie jest aktywny.' });
 
     const row = await ensureAnalysisRow(supabase, purchase, accessToken);
-    if (row?.status === 'submitted') return json(409, { error: 'Ta ankieta została już wysłana.' });
+    if (row?.status === 'submitted') {
+      const fix = await supabase.from('analysis_purchases')
+        .update({ status: 'submitted', submitted_at: new Date().toISOString() })
+        .eq('id', purchase.id).eq('status', 'active');
+      if (fix.error) console.error('Reconcile purchase status:', fix.error);
+      return json(200, { success: true, status: 'submitted' });
+    }
 
     let imagePath = row?.squad_image_url || null;
     let newImagePath = null;
@@ -113,7 +119,7 @@ exports.handler = async function (event) {
 
     if (purchaseUpdate.error) {
       console.error('Nie udało się zamknąć dostępu do zakupu:', purchaseUpdate.error);
-      return json(500, { error: 'Analiza została zapisana, ale nie udało się zamknąć dostępu. Skontaktuj się z FUTrek.' });
+      return json(200, { success: true, status: 'submitted', warning: 'Odpowiedzi zostały zapisane. Synchronizacja statusu zakupu zostanie ponowiona.' });
     }
 
     if (newImagePath && row?.squad_image_url && row.squad_image_url !== newImagePath) {

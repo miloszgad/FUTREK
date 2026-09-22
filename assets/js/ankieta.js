@@ -37,6 +37,12 @@
   let remoteSaveInFlight = false;
   let remoteSaveQueued = false;
   let currentImagePath = null;
+  let formRevision = 0;
+  let imageUploadPromise = null;
+  let imageSelectionRevision = 0;
+  let imageUploadError = null;
+  let remoteSavePromise = null;
+  let submitting = false;
 
   function getPurchaseAccess() {
     if (IS_LOCAL_PREVIEW) return { purchaseId: "local-preview", accessToken: "local-preview" };
@@ -66,6 +72,7 @@
   }
 
   const access = getPurchaseAccess();
+  const activeDraftKey = access && !IS_LOCAL_PREVIEW ? `${DRAFT_KEY}_${access.purchaseId}` : DRAFT_KEY;
 
   function checkedValues(name) {
     return [...form.querySelectorAll(`input[name="${name}"]:checked`)].map(input => input.value);
@@ -170,7 +177,7 @@
 
   function saveLocalDraft() {
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(getDraftData()));
+      localStorage.setItem(activeDraftKey, JSON.stringify(getDraftData()));
     } catch (error) {
       console.warn("Nie udało się zapisać wersji roboczej lokalnie.", error);
     }
@@ -192,6 +199,7 @@
     }
 
     remoteSaveInFlight = true;
+    const savedRevision = formRevision;
     remoteSaveQueued = false;
     setSaveNote("Zapisywanie postępu…");
 
@@ -217,20 +225,20 @@
       if (!response.ok) throw new Error(result.error || "Nie udało się zapisać postępu.");
 
       const time = new Date().toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
-      setSaveNote(`Postęp zapisany w chmurze • ${time}`);
+      if (savedRevision === formRevision && !submitting) setSaveNote(`Postęp zapisany w chmurze • ${time}`);
     } catch (error) {
       console.warn("Autosave Supabase nie powiódł się:", error);
       setSaveNote("Brak połączenia z chmurą — postęp jest zapisany lokalnie w tej przeglądarce.");
     } finally {
       remoteSaveInFlight = false;
-      if (remoteSaveQueued) saveRemoteDraft();
+      if (remoteSaveQueued && !submitting) remoteSavePromise = saveRemoteDraft();
     }
   }
 
   function scheduleDraftSave() {
     saveLocalDraft();
     clearTimeout(draftTimer);
-    draftTimer = setTimeout(saveRemoteDraft, 700);
+    draftTimer = setTimeout(() => { remoteSavePromise = saveRemoteDraft(); }, 700);
   }
 
   function restoreCheckboxes(name, values = []) {
@@ -258,7 +266,7 @@
 
   function restoreLocalDraft() {
     try {
-      const raw = localStorage.getItem(DRAFT_KEY);
+      const raw = localStorage.getItem(activeDraftKey);
       if (raw) applyDraft(JSON.parse(raw));
     } catch (error) {
       console.warn("Nie udało się odtworzyć lokalnej wersji roboczej.", error);
@@ -276,6 +284,7 @@
       return;
     }
 
+    const initialRevision = formRevision;
     setSaveNote("Sprawdzamy zapisany postęp…");
     try {
       const response = await fetch("/.netlify/functions/load-draft", {
@@ -294,8 +303,9 @@
         return;
       }
 
-      applyDraft(result.draft);
-      if (result.draft?.squadImagePath) {
+      // Never overwrite answers already entered while the remote draft was loading.
+      if (formRevision === initialRevision && !localStorage.getItem(activeDraftKey)) applyDraft(result.draft);
+      if (!squadImageInput.files.length && result.draft?.squadImagePath) {
         currentImagePath = result.draft.squadImagePath;
         hasSquadImage = true;
         fileLabel.textContent = "Zdjęcie składu jest już zapisane";
@@ -304,7 +314,7 @@
           filePreview.hidden = false;
         }
       }
-      saveLocalDraft();
+      if (formRevision === initialRevision) saveLocalDraft();
       updateGoalLimit();
       updateProgress();
       setSaveNote("Przywrócono zapisany postęp z chmury.");
@@ -362,13 +372,10 @@
     }
   }
 
-  async function saveDraftImage(file) {
+  async function saveDraftImage(file, selectionRevision) {
     if (IS_LOCAL_PREVIEW || !file) return;
-    if (!access) {
-      setSaveNote("Brak aktywnego dostępu do ankiety.");
-      return;
-    }
-    setSaveNote("Zapisywanie zdjęcia składu…");
+    if (!access) throw new Error("Brak aktywnego dostępu do ankiety.");
+    setSaveNote("Przesyłanie zdjęcia składu… Nie zamykaj tej karty.");
     try {
       const preparedImage = await prepareSquadImage(file);
       const response = await fetch("/.netlify/functions/save-draft-image", {
@@ -381,22 +388,33 @@
         })
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(result.error || "Nie udało się zapisać zdjęcia.");
-      currentImagePath = result.imagePath;
-      hasSquadImage = true;
-      setSaveNote("Zdjęcie i postęp zostały zapisane w chmurze.");
-      updateProgress();
+      if (!response.ok || !result.success || !result.imagePath) {
+        throw new Error(result.error || "Nie udało się zapisać zdjęcia.");
+      }
+      // Później wybrane zdjęcie ma pierwszeństwo przed wcześniejszym żądaniem.
+      if (selectionRevision === imageSelectionRevision) {
+        currentImagePath = result.imagePath;
+        hasSquadImage = true;
+        imageUploadError = null;
+        setError("squadImage");
+        setSaveNote("Zdjęcie składu zapisane w chmurze. Możesz bezpiecznie wrócić do ankiety później.");
+        updateProgress();
+      }
     } catch (error) {
-      console.error("Błąd zapisu zdjęcia draftu:", error);
-      setSaveNote("Nie udało się zapisać zdjęcia w chmurze. Spróbuj ponownie lub wyślij ankietę bez opuszczania strony.");
+      if (selectionRevision === imageSelectionRevision) {
+        imageUploadError = error;
+        setError("squadImage", "Nie zapisano zdjęcia w chmurze. Sprawdź połączenie i ponów wysyłanie formularza.");
+        setSaveNote("Nie udało się zapisać zdjęcia. Nie zamykaj karty; spróbuj wysłać ankietę ponownie.");
+      }
+      throw error;
     }
   }
 
   function handleImageSelection() {
+    if (submitting) return;
     const [file] = squadImageInput.files;
-    hasSquadImage = Boolean(file) || Boolean(currentImagePath);
-
     if (!file) {
+      hasSquadImage = Boolean(currentImagePath);
       fileLabel.textContent = currentImagePath ? "Zdjęcie składu jest już zapisane" : "Dodaj zdjęcie składu";
       if (!currentImagePath) {
         filePreview.hidden = true;
@@ -406,15 +424,29 @@
       return;
     }
 
+    const revision = ++imageSelectionRevision;
+    currentImagePath = null;
+    imageUploadError = null;
+    hasSquadImage = true;
+    setError("squadImage");
     fileLabel.textContent = file.name;
     const reader = new FileReader();
     reader.addEventListener("load", () => {
+      if (revision !== imageSelectionRevision) return;
       filePreviewImage.src = reader.result;
       filePreview.hidden = false;
     });
     reader.readAsDataURL(file);
     updateProgress();
-    saveDraftImage(file);
+
+    // Kolejkuj wysyłanie: starsze zdjęcie nie może nadpisać później wybranego.
+    const previousUpload = imageUploadPromise;
+    imageUploadPromise = (async () => {
+      if (previousUpload) await previousUpload.catch(() => {});
+      if (revision !== imageSelectionRevision) return;
+      await saveDraftImage(file, revision);
+    })();
+    imageUploadPromise.catch(() => {}); // Obsługa błędu następuje w interfejsie i przy finalizacji.
   }
 
   function handleBrokenPlaystyleImages() {
@@ -426,7 +458,7 @@
 
   function lockNoAccessForm() {
     form.querySelectorAll("input, select, textarea, button").forEach(element => { element.disabled = true; });
-    submitStatus.textContent = "Ta ankieta jest dostępna dopiero po opłaceniu analizy BUILD YOUR TEAM.";
+    submitStatus.textContent = "Ta ankieta jest dostępna dopiero po opłaceniu analizy ANALIZA SKŁADU.";
     setSaveNote("Brak aktywnego dostępu. Wróć do Futrek.pl i kup analizę.");
   }
 
@@ -438,12 +470,14 @@
 
   form.addEventListener("input", event => {
     if (event.target.name === "rebuildGoals") updateGoalLimit(event.target);
+    formRevision += 1;
     updateProgress();
     scheduleDraftSave();
   });
 
   form.addEventListener("change", event => {
     if (event.target === squadImageInput) handleImageSelection();
+    else formRevision += 1;
     if (event.target.name === "rebuildGoals") updateGoalLimit(event.target);
     updateProgress();
     if (event.target !== squadImageInput) scheduleDraftSave();
@@ -467,10 +501,20 @@
     }
 
     submitButton.disabled = true;
+    submitting = true;
+    clearTimeout(draftTimer);
     submitStatus.textContent = "Finalizujemy ankietę…";
 
     try {
-      if (squadFile) payload.squadImage = await prepareSquadImage(squadFile);
+      // Finish previous autosave / image upload before sending final response.
+      if (remoteSavePromise) await remoteSavePromise;
+      if (imageUploadPromise) await imageUploadPromise.catch(() => {});
+      if (squadFile && !currentImagePath) {
+        // Powtórz wysyłanie oddzielnym żądaniem; nie umieszczaj zdjęcia w
+        // końcowym formularzu, aby nie przekraczać limitu rozmiaru żądania.
+        await saveDraftImage(squadFile, imageSelectionRevision);
+      }
+      if (!currentImagePath) throw new Error("Zdjęcie składu nie zostało zapisane. Wybierz zdjęcie i spróbuj ponownie.");
 
       const response = await fetch("/.netlify/functions/save-analysis", {
         method: "POST",
@@ -485,7 +529,7 @@
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "Nie udało się zapisać analizy.");
 
-      localStorage.removeItem(DRAFT_KEY);
+      localStorage.removeItem(activeDraftKey);
       submitStatus.textContent = "Gotowe! Otrzymaliśmy Twoje odpowiedzi. Ankieta została finalnie wysłana.";
       setSaveNote("Ankieta wysłana — edycja została zablokowana.");
       form.querySelectorAll("input, select, textarea, button").forEach(element => { element.disabled = true; });
@@ -493,6 +537,7 @@
       console.error("Błąd wysyłania analizy:", error);
       submitStatus.textContent = error.message || "Nie udało się wysłać odpowiedzi. Spróbuj ponownie.";
       submitButton.disabled = false;
+      submitting = false;
     }
   }
 
@@ -504,14 +549,13 @@
       return;
     }
     saveLocalDraft();
-    await saveRemoteDraft();
     await submitAnalysis();
   });
 
   if (IS_LOCAL_PREVIEW || access) {
     restoreLocalDraft();
   } else {
-    localStorage.removeItem(DRAFT_KEY);
+    localStorage.removeItem(activeDraftKey);
   }
   updateGoalLimit();
   handleBrokenPlaystyleImages();

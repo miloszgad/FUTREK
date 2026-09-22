@@ -1,7 +1,7 @@
 const Stripe = require('stripe');
 const { getSupabase } = require('./_shared/analysis');
 const { makeAccessToken } = require('./_shared/purchase-access');
-const { ANALYSIS_PRICE_ID } = require('./_shared/products');
+const { getAnalysisQuantity } = require('./_shared/products');
 
 function json(statusCode, body, extraHeaders = {}) {
   return {
@@ -16,8 +16,7 @@ function json(statusCode, body, extraHeaders = {}) {
 }
 
 async function ensureAnalysisPurchases(session, lineItems) {
-  const analysisItem = lineItems.data.find(item => item.price?.id === ANALYSIS_PRICE_ID);
-  const quantity = Math.max(0, Number(analysisItem?.quantity) || 0);
+  const quantity = getAnalysisQuantity(session, lineItems);
   if (!quantity) return [];
 
   const supabase = getSupabase();

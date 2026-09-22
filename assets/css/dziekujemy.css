@@ -12,3 +12,10 @@
     .back-link{background:transparent;color:#d9ffe8;border:1px solid var(--line);margin-left:8px}
     .analysis-access-list{display:grid;gap:10px;margin-top:18px}
     .analysis-access-list .analysis-access{margin-top:0}
+
+.analysis-copy-link{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:transparent;color:#d9ffe8;font:inherit;cursor:pointer}
+
+.analysis-access-warning{margin:16px 0;padding:16px;border:1px solid rgba(255,194,90,.65);border-radius:15px;background:rgba(255,194,90,.10);color:#fff0cc;text-align:left;line-height:1.55}
+.analysis-access-warning[hidden]{display:none}
+.analysis-access-warning>strong{display:block;color:#ffe0a0;font-size:17px}
+.analysis-access-warning p{margin:8px 0 0;font-size:14px;color:#f4ead4}

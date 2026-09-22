@@ -6,6 +6,26 @@ function isTikTokBrowser() {
   return /TikTok|musical_ly|BytedanceWebview|ByteLocale/i.test(ua);
 }
 
+const PRODUCT_CATALOG = Object.freeze({
+  "build-your-team": { name: "📊 ANALIZA SKŁADU", price: 24.99 },
+  "full-game-control": { name: "👑 KOMPLETNY PAKIET WIEDZY - Zestaw 3 kursów", price: 99.99 },
+  "area-control": { name: "🛡️ ATAK", price: 39.99 },
+  "goal-machine": { name: "⚽️ OBRONA", price: 39.99 },
+  "wild-mentality": { name: "🧠 MENTALNOŚĆ", price: 39.99 }
+});
+function normalizeCart(cart) {
+  if (!Array.isArray(cart)) return [];
+  const byId = new Map();
+  cart.forEach(item => {
+    if (!item || !Object.prototype.hasOwnProperty.call(PRODUCT_CATALOG, item.id)) return;
+    const quantity = Number(item.quantity);
+    if (!Number.isInteger(quantity) || quantity < 1) return;
+    const previous = byId.get(item.id) || 0;
+    byId.set(item.id, Math.min(10, previous + quantity));
+  });
+  return [...byId].map(([id, quantity]) => ({id, ...PRODUCT_CATALOG[id], quantity}));
+}
+
 function restoreCartFromUrl() {
   const params = new URLSearchParams(window.location.search);
   const encoded = params.get("cart");
@@ -17,22 +37,7 @@ function restoreCartFromUrl() {
 
     if (!Array.isArray(parsed)) return;
 
-    const allowedIds = new Set([
-      "build-your-team",
-      "full-game-control",
-      "area-control",
-      "goal-machine",
-      "wild-mentality"
-    ]);
-
-    const cleanCart = parsed
-      .filter(item => allowedIds.has(item.id))
-      .map(item => ({
-        id: item.id,
-        name: String(item.name || ""),
-        price: Number(item.price),
-        quantity: Math.max(1, Math.min(10, Number(item.quantity) || 1))
-      }));
+    const cleanCart = normalizeCart(parsed);
 
     if (cleanCart.length) {
       localStorage.setItem("futrek_cart", JSON.stringify(cleanCart));
@@ -78,14 +83,14 @@ const CART_KEY = "futrek_cart";
     function getCart() {
       try {
         const cart = JSON.parse(localStorage.getItem(CART_KEY));
-        return Array.isArray(cart) ? cart : [];
+        return normalizeCart(cart);
       } catch {
         return [];
       }
     }
 
     function saveCart(cart) {
-      localStorage.setItem(CART_KEY, JSON.stringify(cart));
+      localStorage.setItem(CART_KEY, JSON.stringify(normalizeCart(cart)));
       renderCart();
     }
 
@@ -102,7 +107,7 @@ const CART_KEY = "futrek_cart";
 
       if (!item) return;
 
-      item.quantity += change;
+      item.quantity = Math.min(10, item.quantity + change);
 
       const updatedCart = cart.filter(product => product.quantity > 0);
       saveCart(updatedCart);
@@ -190,6 +195,7 @@ const CART_KEY = "futrek_cart";
       const cart = getCart();
 
       if (!cart.length) return;
+      if (!stripe) { showPaymentError("Płatność jest chwilowo niedostępna. Odśwież stronę lub spróbuj później."); return; }
 
       if (IS_LOCAL_PREVIEW) {
         showPaymentError("Tryb podglądu lokalnego: wygląd kasy możesz sprawdzać z dysku, ale prawdziwa płatność Stripe działa dopiero przez Netlify / https://.");

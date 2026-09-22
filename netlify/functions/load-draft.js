@@ -15,6 +15,12 @@ exports.handler = async function (event) {
     if (!authorized || !purchase) return json(403, { error: 'Ta ankieta wymaga opłaconej analizy.' });
 
     const row = await ensureAnalysisRow(supabase, purchase, accessToken);
+    if (row.status === 'submitted' && purchase.status === 'active') {
+      const fix = await supabase.from('analysis_purchases')
+        .update({ status: 'submitted', submitted_at: new Date().toISOString() })
+        .eq('id', purchase.id).eq('status', 'active');
+      if (fix.error) console.error('Reconcile purchase status:', fix.error);
+    }
 
     let signedImageUrl = null;
     if (row.squad_image_url) {

@@ -1,4 +1,5 @@
 const { json, parseImageDataUrl } = require('./_shared/analysis');
+const { randomUUID } = require('crypto');
 const { getAuthorizedPurchase, ensureAnalysisRow } = require('./_shared/purchase-access');
 
 exports.handler = async function (event) {
@@ -21,23 +22,29 @@ exports.handler = async function (event) {
 
     const row = await ensureAnalysisRow(supabase, purchase, accessToken);
 
-    const imagePath = `${purchase.analysis_id}/draft-squad.${parsedImage.extension}`;
+    const imagePath = `${purchase.analysis_id}/draft-${randomUUID()}.${parsedImage.extension}`;
     const { error: uploadError } = await supabase.storage
       .from('squad-images')
       .upload(imagePath, parsedImage.buffer, {
         contentType: parsedImage.contentType,
         cacheControl: '3600',
-        upsert: true
+        upsert: false
       });
     if (uploadError) throw uploadError;
 
     const previousPath = row?.squad_image_url || null;
-    const { error: updateError } = await supabase
+    const { data: updated, error: updateError } = await supabase
       .from('analyses')
       .update({ squad_image_url: imagePath })
       .eq('id', purchase.analysis_id)
-      .eq('status', 'draft');
-    if (updateError) throw updateError;
+      .eq('status', 'draft')
+      .select('id')
+      .maybeSingle();
+    if (updateError || !updated) {
+      await supabase.storage.from('squad-images').remove([imagePath]);
+      if (updateError) throw updateError;
+      return json(409, { error: 'Ankieta została już wysłana. Nie można zmienić zdjęcia.' });
+    }
 
     if (previousPath && previousPath !== imagePath) {
       await supabase.storage.from('squad-images').remove([previousPath]);
