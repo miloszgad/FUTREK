@@ -66,17 +66,24 @@
 
 <style>
 #futrek-browser-choice[hidden]{display:none!important}
-#futrek-browser-choice{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;padding:18px;background:rgba(0,0,0,.82)}
-#futrek-browser-choice .fbc-panel{box-sizing:border-box;width:min(100%,440px);max-height:90dvh;overflow:auto;border:1px solid #39774c;border-radius:18px;background:#101b13;color:#f5f8f5;padding:24px;box-shadow:0 16px 50px #0009}
-#futrek-browser-choice h2{margin:0 0 12px;font-size:1.35rem}
-#futrek-browser-choice p{line-height:1.5;margin:0 0 14px}
-#futrek-browser-choice .fbc-actions{display:grid;gap:10px}
-#futrek-browser-choice button{width:100%;min-height:46px;border-radius:10px;border:1px solid #50895a;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer}
-#futrek-browser-choice #fbc-copy{background:#7dd78b;color:#07170a}
-#futrek-browser-choice #fbc-continue{background:#243b2a;color:white}
-#futrek-browser-choice #fbc-close{background:transparent;color:white}
-#futrek-browser-choice #fbc-status{min-height:1.5em;font-size:.9rem;color:#b5e9b9;overflow-wrap:anywhere}
-#futrek-browser-choice #fbc-manual{display:none;width:100%;box-sizing:border-box;margin-top:8px;background:#fff;color:#111;padding:8px;border-radius:6px}
+#futrek-browser-choice{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;padding:18px;background:rgba(1,7,4,.86);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+#futrek-browser-choice .fbc-panel{box-sizing:border-box;width:min(100%,450px);max-height:90dvh;overflow:auto;border:1px solid rgba(124,255,176,.32);border-radius:25px;background:radial-gradient(circle at 100% 0%,rgba(0,255,122,.13),transparent 55%),linear-gradient(155deg,#15241a,#09120d 78%);color:#f4fff8;padding:clamp(22px,5vw,32px);box-shadow:0 30px 85px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.06)}
+#futrek-browser-choice .fbc-eyebrow{display:inline-flex;align-items:center;gap:8px;margin:0 0 15px;padding:7px 11px;border:1px solid rgba(124,255,176,.27);border-radius:999px;background:rgba(0,255,122,.08);color:#aaffc9;font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+#futrek-browser-choice h2{margin:0 0 12px;font-size:clamp(23px,5.5vw,29px);line-height:1.14;letter-spacing:-.7px;font-weight:900}
+#futrek-browser-choice p{line-height:1.55;margin:0 0 14px;color:#c8d8ce;font-size:14px}
+#futrek-browser-choice .fbc-note{padding:13px 14px;border:1px solid rgba(124,255,176,.2);border-radius:13px;background:rgba(0,255,122,.055);color:#e4f7e9;font-size:13px}
+#futrek-browser-choice .fbc-actions{display:grid;gap:10px;margin-top:20px}
+#futrek-browser-choice button{width:100%;min-height:50px;border-radius:13px;border:1px solid transparent;padding:12px 16px;font:inherit;font-size:14px;font-weight:850;line-height:1.3;cursor:pointer;transition:background .18s,border-color .18s,transform .18s}
+#futrek-browser-choice button:active{transform:scale(.985)}
+#futrek-browser-choice button:focus-visible{outline:2px solid #fff;outline-offset:3px}
+#futrek-browser-choice #fbc-copy{background:linear-gradient(135deg,#00ff7a,#8bffc0);color:#04130a;box-shadow:0 7px 22px rgba(0,255,122,.17)}
+#futrek-browser-choice #fbc-copy:hover{background:linear-gradient(135deg,#5aff9f,#baffd5)}
+#futrek-browser-choice #fbc-continue{background:rgba(255,255,255,.085);border-color:rgba(255,255,255,.19);color:#f4fff8}
+#futrek-browser-choice #fbc-continue:hover{background:rgba(255,255,255,.14)}
+#futrek-browser-choice #fbc-close{min-height:38px;background:transparent;color:#b3c8b9;font-size:13px}
+#futrek-browser-choice #fbc-close:hover{color:white}
+#futrek-browser-choice #fbc-status{min-height:1.5em;font-size:12px;color:#b5e9b9;overflow-wrap:anywhere;margin:12px 0 0}
+#futrek-browser-choice #fbc-manual{display:none;width:100%;box-sizing:border-box;margin-top:8px;background:#f4fff8;color:#101a13;padding:10px;border:1px solid #aaffc9;border-radius:9px;font:inherit;font-size:12px}
 </style>
 </head>
 <body>
@@ -118,8 +125,8 @@
 
     const IS_LOCAL_PREVIEW = window.location.protocol === "file:";
 
-    // TRYB TESTOWY: liczniki i blokady sprzedaży są tymczasowo wyłączone. Przed premierą przywróć false.
-    const TEMPORARY_CART_TEST = true;
+    // Tryb testowy wyłączony: liczniki i blokady znikają automatycznie w RELEASE_AT.
+    const TEMPORARY_CART_TEST = false;
     function isReleased() { return TEMPORARY_CART_TEST || Date.now() >= RELEASE_AT.getTime(); }
 
     function formatCountdown(ms) {
@@ -298,10 +305,11 @@
     });
   </script>
 <div id="futrek-browser-choice" hidden role="dialog" aria-modal="true" aria-labelledby="fbc-title">
-<div class="fbc-panel"><h2 id="fbc-title">Przejście do kasy</h2>
-<p>Jeśli otwierasz FUTrek w TikToku, skopiuj pełny link do kasy i wklej go w Safari lub Chrome. W linku zapisane są wybrane produkty.</p>
-<p>Jeśli jesteś już w Safari lub Chrome, wybierz „Przejdź do kasy”.</p>
-<div class="fbc-actions"><button id="fbc-copy" type="button">Skopiuj link do kasy z koszykiem</button><button id="fbc-continue" type="button">Przejdź do kasy</button><button id="fbc-close" type="button">Wróć do sklepu</button></div>
+<div class="fbc-panel"><span class="fbc-eyebrow">🛒 Bezpieczne przejście do kasy</span><h2 id="fbc-title">Dokończ zakup w przeglądarce</h2>
+<p>TikTok blokuje otwieranie naszej kasy we własnej przeglądarce. Aby dokończyć zakup, skopiuj link i otwórz go w <strong style="color:#f4fff8">Safari lub Chrome</strong>.</p>
+<p class="fbc-note">Twoje wybrane produkty są zapisane w linku — po otwarciu go w przeglądarce nadal będą w koszyku.</p>
+<p>Jesteś już w Safari lub Chrome? Kliknij „Przejdź do kasy”.</p>
+<div class="fbc-actions"><button id="fbc-copy" type="button">↗ Skopiuj link do kasy</button><button id="fbc-continue" type="button">Przejdź do kasy →</button><button id="fbc-close" type="button">Wróć do sklepu</button></div>
 <p id="fbc-status" role="status" aria-live="polite"></p><input id="fbc-manual" type="text" readonly aria-label="Link do ręcznego skopiowania"></div></div>
 <script>
 (() => {
