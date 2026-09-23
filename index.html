@@ -64,6 +64,20 @@
 
 
 
+<style>
+#futrek-browser-choice[hidden]{display:none!important}
+#futrek-browser-choice{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;padding:18px;background:rgba(0,0,0,.82)}
+#futrek-browser-choice .fbc-panel{box-sizing:border-box;width:min(100%,440px);max-height:90dvh;overflow:auto;border:1px solid #39774c;border-radius:18px;background:#101b13;color:#f5f8f5;padding:24px;box-shadow:0 16px 50px #0009}
+#futrek-browser-choice h2{margin:0 0 12px;font-size:1.35rem}
+#futrek-browser-choice p{line-height:1.5;margin:0 0 14px}
+#futrek-browser-choice .fbc-actions{display:grid;gap:10px}
+#futrek-browser-choice button{width:100%;min-height:46px;border-radius:10px;border:1px solid #50895a;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer}
+#futrek-browser-choice #fbc-copy{background:#7dd78b;color:#07170a}
+#futrek-browser-choice #fbc-continue{background:#243b2a;color:white}
+#futrek-browser-choice #fbc-close{background:transparent;color:white}
+#futrek-browser-choice #fbc-status{min-height:1.5em;font-size:.9rem;color:#b5e9b9;overflow-wrap:anywhere}
+#futrek-browser-choice #fbc-manual{display:none;width:100%;box-sizing:border-box;margin-top:8px;background:#fff;color:#111;padding:8px;border-radius:6px}
+</style>
 </head>
 <body>
   <header><div class="wrap nav"><a class="brand" href="#top"><img src="assets/images/logo.jpeg" alt="Logo FUTrek"><span>FUTrek</span></a><nav class="navlinks"><a href="#oferty">Oferty</a><a href="#opinie">Opinie</a><a href="#jak">Zakup</a><a href="#kontakt">Pomoc</a></nav><a class="navcta cart-link" href="kasa.html">Koszyk <span class="cart-count" id="cart-count">0</span></a></div></header>
@@ -283,5 +297,47 @@
       }
     });
   </script>
+<div id="futrek-browser-choice" hidden role="dialog" aria-modal="true" aria-labelledby="fbc-title">
+<div class="fbc-panel"><h2 id="fbc-title">Przejście do kasy</h2>
+<p>Jeśli otwierasz FUTrek w TikToku, skopiuj pełny link do kasy i wklej go w Safari lub Chrome. W linku zapisane są wybrane produkty.</p>
+<p>Jeśli jesteś już w Safari lub Chrome, wybierz „Przejdź do kasy”.</p>
+<div class="fbc-actions"><button id="fbc-copy" type="button">Skopiuj link do kasy z koszykiem</button><button id="fbc-continue" type="button">Przejdź do kasy</button><button id="fbc-close" type="button">Wróć do sklepu</button></div>
+<p id="fbc-status" role="status" aria-live="polite"></p><input id="fbc-manual" type="text" readonly aria-label="Link do ręcznego skopiowania"></div></div>
+<script>
+(() => {
+ const cartLink=document.querySelector('.cart-link');
+ const modal=document.getElementById('futrek-browser-choice');
+ if(!cartLink||!modal)return;
+ const copyButton=document.getElementById('fbc-copy');
+ const status=document.getElementById('fbc-status');
+ const manual=document.getElementById('fbc-manual');
+ let checkoutUrl='';
+ function closeModal(){modal.hidden=true;document.body.style.overflow='';cartLink.focus();}
+ cartLink.addEventListener('click',(event)=>{
+   // TikTok may hide its identity and block navigation before kasa.html loads.
+   // Offer the cart-preserving URL BEFORE navigation on mobile devices.
+   if(!/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent))return;
+   event.preventDefault();
+   checkoutUrl=typeof buildCheckoutUrl==='function'?buildCheckoutUrl():cartLink.href;
+   status.textContent='';manual.style.display='none';modal.hidden=false;
+   document.body.style.overflow='hidden';copyButton.focus();
+ });
+ copyButton.addEventListener('click',async()=>{
+   try{
+     if(!navigator.clipboard||!window.isSecureContext)throw new Error('Clipboard unavailable');
+     await navigator.clipboard.writeText(checkoutUrl);
+     status.textContent='Link skopiowany. Otwórz Safari lub Chrome i wklej go w pasek adresu.';
+   }catch(_){
+     manual.value=checkoutUrl;manual.style.display='block';manual.focus();manual.select();
+     let copied=false;try{copied=document.execCommand('copy');}catch(_){}
+     status.textContent=copied?'Link skopiowany. Otwórz Safari lub Chrome i wklej go w pasek adresu.':'Nie udało się skopiować automatycznie. Skopiuj link z pola poniżej.';
+   }
+ });
+ document.getElementById('fbc-continue').addEventListener('click',()=>window.location.assign(checkoutUrl));
+ document.getElementById('fbc-close').addEventListener('click',closeModal);
+ modal.addEventListener('click',(event)=>{if(event.target===modal)closeModal();});
+ document.addEventListener('keydown',(event)=>{if(event.key==='Escape'&&!modal.hidden)closeModal();});
+})();
+</script>
 </body>
 </html>
